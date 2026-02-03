@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: fuel-watch-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: carburantes
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./carburantes.sql:/docker-entrypoint-initdb.d/carburantes.sql
+      - fuel-data:/var/lib/mysql
+
+volumes:
+  fuel-data:
