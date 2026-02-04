@@ -25,6 +25,9 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     );
   }
 
+  // Dynamic sizing logic: only 1 category active (Diesel OR Gasoline)
+  const isLargeDisplay = activeFilters.length === 1;
+
   const getPricePercentage = (price: number, statKey: string) => {
     const s = stats?.[statKey];
     if (!s || !s.max || s.max === s.min || !price) return 50;
@@ -35,9 +38,9 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
   const renderTrend = (currentPrice: number, historyKey: string) => {
     const oldPrice = station.trend?.[historyKey];
     if (!oldPrice || oldPrice === 0) return null;
-    if (currentPrice > oldPrice) return <TrendingUp size={12} className='text-red-500 ml-1' />;
-    if (currentPrice < oldPrice) return <TrendingDown size={12} className='text-green-500 ml-1' />;
-    return <Minus size={12} className='text-gray-300 ml-1' />;
+    if (currentPrice > oldPrice) return <TrendingUp size={isLargeDisplay ? 14 : 12} className='text-red-500 ml-1' />;
+    if (currentPrice < oldPrice) return <TrendingDown size={isLargeDisplay ? 14 : 12} className='text-green-500 ml-1' />;
+    return <Minus size={isLargeDisplay ? 14 : 12} className='text-gray-300 ml-1' />;
   };
 
   return (
@@ -88,16 +91,16 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           const perc = getPricePercentage(price, f.statKey);
           const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
           return (
-            <div key={f.key} className='flex flex-col items-center flex-1 lg:flex-none min-w-[72px] lg:min-w-[90px]'>
-              <span className='text-[9px] lg:text-[10px] font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1'>{f.label}</span>
+            <div key={f.key} className={`flex flex-col items-center flex-1 lg:flex-none ${isLargeDisplay ? 'min-w-[100px] lg:min-w-[120px]' : 'min-w-[72px] lg:min-w-[90px]'}`}>
+              <span className={`font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1 ${isLargeDisplay ? 'text-[10px] lg:text-xs' : 'text-[9px] lg:text-[10px]'}`}>{f.label}</span>
               <div className='flex flex-col items-center w-fit'>
                 <div className='flex items-center'>
-                  <span className='font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap text-[16px] lg:text-xl'>
+                  <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[22px] lg:text-3xl' : 'text-[16px] lg:text-xl'}`}>
                     {price.toFixed(3)}€
                   </span>
                   {renderTrend(price, f.historyKey)}
                 </div>
-                <div className='w-full bg-gray-100 astro-dark:bg-white/5 h-1 rounded-full mt-3 overflow-hidden flex flex-row-reverse'>
+                <div className={`w-full bg-gray-100 astro-dark:bg-white/5 h-1 rounded-full mt-3 overflow-hidden flex flex-row-reverse`}>
                   <div className={`${barColor} h-full transition-all duration-500`} style={{ width: `${perc}%` }}></div>
                 </div>
               </div>
