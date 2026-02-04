@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Update fuel prices from Ministry API
 
-    env:
-      # Tu dominio en Cloudflare Pages
-      SYNC_URL: ${{ secrets.SYNC_URL || 'https://fuelwatch.pages.dev' }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,20 +20,19 @@ jobs:
         run: |
           if [ -z "${{ secrets.CRON_TOKEN }}" ]; then
             echo "❌ Error: CRON_TOKEN secret is not configured"
-            echo "Please add CRON_TOKEN to your GitHub repository secrets"
             exit 1
           fi
-          if [ -z "${{ secrets.SYNC_URL }}" ]; then
-            echo "⚠️  Warning: SYNC_URL not configured, using default"
-          fi
+          echo "✅ CRON_TOKEN is configured"
 
       - name: Sync fuel prices
         run: |
           echo "Starting fuel price synchronization..."
-          echo "SYNC_URL: $SYNC_URL"
-          echo "Token is configured: ${{ secrets.CRON_TOKEN != '' }}"
 
-          ENDPOINT="$SYNC_URL/api/update-prices?token=${{ secrets.CRON_TOKEN }}"
+          SYNC_URL="https://fuelwatch.pages.dev"
+          CRON_TOKEN="${{ secrets.CRON_TOKEN }}"
+          ENDPOINT="$SYNC_URL/api/update-prices?token=$CRON_TOKEN"
+
+          echo "Calling: $SYNC_URL/api/update-prices"
           echo "Calling endpoint..."
 
           # Usa -v para verbose y -i para headers
