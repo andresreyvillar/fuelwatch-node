@@ -22,8 +22,15 @@ const FuelApp: React.FC = () => {
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
-        const city = 'Madrid';
-        setSearch(city);
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          const city = data.address.city || data.address.town || data.address.village || 'Madrid';
+          setSearch(city);
+        } catch {
+          setSearch('Madrid');
+        }
       }, () => setSearch('Madrid'));
     } else {
       setSearch('Madrid');
@@ -97,49 +104,47 @@ const FuelApp: React.FC = () => {
 
   const currentStats = stats ? (activeFilters.includes('diesel') ? stats.diesel : stats.gas95) : null;
 
-  const SidebarContent = (
-    <div className='flex flex-col h-full'>
-      <div className='mb-10'>
-        <h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1>
+  const FilterForm = ({ isDark }: { isDark: boolean }) => (
+    <div className='space-y-6'>
+      <div>
+        <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-3 ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Búsqueda</label>
+        <div className='relative'>
+          <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/40' : 'text-gray-400'}`} size={18} />
+          <input type='text' value={search} onChange={e => setSearch(e.target.value)} className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} placeholder='Ciudad o CP...' />
+        </div>
       </div>
-      
-      <div className='space-y-8 flex-1'>
-        <div>
-          <label className='block text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-3 ml-1'>Búsqueda</label>
-          <div className='relative'>
-            <Search className='absolute left-4 top-1/2 -translate-y-1/2 text-white/40' size={18} />
-            <input type='text' value={search} onChange={e => setSearch(e.target.value)} className='w-full bg-white/10 border border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-white focus:ring-2 focus:ring-primary outline-none transition-all placeholder-white/20' placeholder='Ciudad o CP...' />
-          </div>
+
+      <div className='space-y-6'>
+        <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Filtros</label>
+        <div className={`flex p-1 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
+          <button onClick={() => setActiveFilters(['diesel'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
+          <button onClick={() => setActiveFilters(['gasolina'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
         </div>
 
-        <div className='space-y-6'>
-          <label className='block text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-1'>Filtros</label>
-          <div className='flex p-1 bg-white/5 rounded-2xl border border-white/5'>
-            <button onClick={() => setActiveFilters(['diesel'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white' : 'text-white/40'}`}>DIÉSEL</button>
-            <button onClick={() => setActiveFilters(['gasolina'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white' : 'text-white/40'}`}>GASOLINA</button>
-          </div>
+        <div className='relative'>
+          <button onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)} className={`w-full flex items-center justify-between border rounded-2xl px-4 py-3 font-bold transition-all ${isDark ? 'bg-white/5 border-white/5 text-white hover:bg-white/10' : 'bg-gray-50 border-gray-100 text-secondary hover:bg-gray-100'}`}>
+            <span className='truncate'>{selectedBrands.length ? `${selectedBrands.length} Marcas` : 'Todas las marcas'}</span>
+            <ChevronDown size={18} className={`transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {isBrandDropdownOpen && (
+            <div className={`absolute z-50 w-full mt-2 border shadow-2xl rounded-2xl max-h-60 overflow-y-auto p-2 ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
+              <button onClick={() => setSelectedBrands([])} className='w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg mb-1'>Limpiar selección</button>
+              {availableBrands.map(b => (
+                <div key={b} onClick={() => setSelectedBrands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b])} className={`flex items-center p-2 hover:bg-white/5 cursor-pointer rounded-lg ${isDark ? 'text-white' : 'text-secondary'}`}>
+                  <div className={`w-4 h-4 border rounded mr-3 ${selectedBrands.includes(b) ? 'bg-primary border-primary' : isDark ? 'border-white/20' : 'border-gray-200'}`} />
+                  <span className='text-sm'>{b}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-          <div className='relative'>
-            <button onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)} className='w-full flex items-center justify-between bg-white/5 border border-white/5 rounded-2xl px-4 py-3 text-white font-bold hover:bg-white/10 transition-all'>
-              <span className='truncate'>{selectedBrands.length ? `${selectedBrands.length} Seleccionadas` : 'Todas las marcas'}</span>
-              <ChevronDown size={18} />
-            </button>
-            {isBrandDropdownOpen && (
-              <div className='absolute z-50 w-full mt-2 bg-[#1a1a1a] border border-white/10 shadow-2xl rounded-2xl max-h-60 overflow-y-auto p-2'>
-                {availableBrands.map(b => (
-                  <div key={b} onClick={() => setSelectedBrands(prev => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b])} className='flex items-center p-2 hover:bg-white/5 cursor-pointer rounded-lg text-white'>
-                    <div className={`w-4 h-4 border border-white/20 rounded mr-3 ${selectedBrands.includes(b) ? 'bg-primary border-primary' : ''}`} />
-                    <span className='text-sm'>{b}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+        <div>
+          <div className='flex justify-between text-[10px] font-black uppercase mb-3 ml-1'>
+            <span className={isDark ? 'text-white/40' : 'text-gray-400'}>Precio Máx</span>
+            <span className='text-primary'>{tempPriceRange.max.toFixed(2)}€</span>
           </div>
-
-          <div>
-            <div className='flex justify-between text-[10px] font-black text-white/40 uppercase mb-3 ml-1'><span>Precio Máx</span><span className='text-primary'>${tempPriceRange.max.toFixed(2)}€</span></div>
-            <input type='range' min='1' max='2.5' step='0.01' value={tempPriceRange.max} onChange={e => setPriceTempRange(p => ({...p, max: parseFloat(e.target.value)}))} className='w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-primary' />
-          </div>
+          <input type='range' min='1' max='2.5' step='0.01' value={tempPriceRange.max} onChange={e => setPriceTempRange(p => ({...p, max: parseFloat(e.target.value)}))} className='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary' />
         </div>
       </div>
     </div>
@@ -147,25 +152,33 @@ const FuelApp: React.FC = () => {
 
   return (
     <div className='min-h-screen bg-gray-50 flex flex-col md:flex-row'>
-      {/* Desktop Sidebar (> 800px) */}
+      {/* Desktop Sidebar */}
       <div className={`hidden md:flex flex-col bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'w-80 p-6' : 'w-0 overflow-hidden p-0'}`}>
-        {SidebarContent}
-      </div>
-
-      {/* Mobile Header (< 800px) */}
-      <div className='md:hidden bg-secondary text-white p-4 flex items-center justify-between shadow-lg'>
-        <h1 className='text-xl font-black'>FUEL <span className='text-primary'>WATCH</span></h1>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className='p-2 bg-white/10 rounded-xl'><Menu size={24}/></button>
+        <div className='flex flex-col h-full'>
+          <div className='mb-10'>
+            <h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1>
+          </div>
+          <FilterForm isDark={true} />
+        </div>
       </div>
 
       {/* Main Area */}
       <div className='flex-1 flex flex-col h-screen overflow-y-auto'>
-        {/* Header with hamburger for desktop */}
-        <div className='hidden md:flex items-center bg-white p-4 border-b border-gray-100 shadow-sm'>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className='p-2 hover:bg-gray-50 rounded-xl transition-colors text-secondary'>
+        {/* Header with hamburger */}
+        <div className='bg-secondary md:bg-white p-4 flex items-center border-b border-gray-100 shadow-sm'>
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-secondary'}`}>
             {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
           </button>
-          {!isSidebarOpen && <h1 className='text-xl font-black ml-4 text-secondary'>FUEL <span className='text-primary'>WATCH</span></h1>}
+          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen && window.innerWidth >= 768 ? 'hidden' : 'md:text-secondary text-white'}`}>
+            FUEL <span className='text-primary'>WATCH</span>
+          </h1>
+        </div>
+
+        {/* Mobile Filter Toggleable Area */}
+        <div className={`md:hidden bg-secondary overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'max-h-[600px] border-b border-white/10' : 'max-h-0'}`}>
+          <div className='p-6'>
+            <FilterForm isDark={true} />
+          </div>
         </div>
 
         <div className='max-w-4xl w-full mx-auto p-4 md:p-8'>
@@ -178,7 +191,7 @@ const FuelApp: React.FC = () => {
 
           <div className='flex items-center justify-between mb-6 px-2'>
             <h2 className='font-black text-secondary uppercase tracking-widest text-xs'>Estaciones en {search}</h2>
-            <span className='text-[10px] text-gray-400 font-bold'>${filteredResults.length} RESULTADOS</span>
+            <span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span>
           </div>
 
           <div className='grid grid-cols-1 gap-2'>
@@ -189,18 +202,6 @@ const FuelApp: React.FC = () => {
           {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white border border-gray-200 text-secondary font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
         </div>
       </div>
-
-      {/* Mobile Drawer Overlay */}
-      {!isSidebarOpen && window.innerWidth < 768 && (
-        <div className='fixed inset-0 z-50 md:hidden'>
-          <div className='absolute inset-0 bg-secondary/95 backdrop-blur-md p-6 overflow-y-auto'>
-            <div className='flex justify-end mb-6'><button onClick={() => setIsSidebarOpen(true)} className='p-2 bg-white/10 rounded-xl text-white'><X size={24}/></button></div>
-            {SidebarContent}
-          </div>
-        </div>
-      )}
-
-      {/* Stats bar removed for cleaner UI as stats are in filters now, but kept logic if needed */}
     </div>
   );
 };
