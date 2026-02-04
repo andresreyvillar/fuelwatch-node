@@ -20,6 +20,13 @@ import { FuelModule } from './fuel/fuel.module';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true, // Enabled for automatic table creation
         logging: true, // Enable logging
+        ssl: {
+          rejectUnauthorized: false, // Required for Supabase
+        },
+        extra: {
+          max: 10, // Connection pool size
+          idleTimeoutMillis: 30000,
+        },
       }),
       inject: [ConfigService],
     }),
