@@ -6,8 +6,8 @@ function checkSupabase() {
 }
 
 export async function updateDataFromMinistry() {
-  const url = import.meta.env.MINISTRY_API_URL;
-  if (!url) throw new Error('MINISTRY_API_URL not configured');
+  // Ministry API URL - hardcoded since Cloudflare Pages doesn't inject env vars in SSR runtime
+  const url = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
 
   const response = await fetch(url);
   const data = await response.json();
