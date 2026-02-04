@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
+import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, ArrowDownWideEqual } from 'lucide-react';
 import StationCard from './StationCard';
 
 const FilterForm = ({
-  isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy
+  isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit
 }: any) => (
   <div className='space-y-6'>
     <div>
@@ -16,6 +16,7 @@ const FilterForm = ({
           onChange={e => setSearch(e.target.value)} 
           onFocus={(e) => { setIsSearchFocused(true); setSearch(''); }}
           onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+          onKeyDown={(e) => { if (e.key === 'Enter') onSearchSubmit(); }}
           className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} 
           placeholder='Ciudad o CP...' 
         />
@@ -139,21 +140,15 @@ const FuelApp: React.FC = () => {
     }
     if (window.innerWidth >= 1024) setIsSidebarOpen(true);
 
-    // Touch Gestures for Sidebar
     const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
     const handleTouchEnd = (e: TouchEvent) => {
       if (touchStartX.current === null) return;
       const touchEndX = e.changedTouches[0].clientX;
       const diff = touchEndX - touchStartX.current;
-      
-      // Swipe right from near left edge to open
       if (diff > 100 && touchStartX.current < 50) setIsSidebarOpen(true);
-      // Swipe left anywhere to close
       if (diff < -100) setIsSidebarOpen(false);
-      
       touchStartX.current = null;
     };
-
     document.addEventListener('touchstart', handleTouchStart);
     document.addEventListener('touchend', handleTouchEnd);
     return () => {
@@ -197,6 +192,11 @@ const FuelApp: React.FC = () => {
       if (prev.includes(f)) return prev.length > 1 ? prev.filter(x => x !== f) : prev;
       return [...prev, f];
     });
+  };
+
+  const handleSubmitSearch = () => {
+    setDebouncedSearch(search);
+    if (window.innerWidth < 1024) setIsSidebarOpen(false);
   };
 
   const fetchData = async (resetPage = true) => {
@@ -267,7 +267,7 @@ const FuelApp: React.FC = () => {
     });
   }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters, sortBy]);
 
-  const filterProps = { search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); } };
+  const filterProps = { search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit: handleSubmitSearch, onSelectSuggestion: (s: string) => { setSearch(s); handleSubmitSearch(); setSuggestions([]); setIsSearchFocused(false); } };
 
   return (
     <div className='h-screen w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col lg:flex-row transition-colors duration-300 overflow-hidden'>
@@ -288,7 +288,7 @@ const FuelApp: React.FC = () => {
         <div className='flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8'><div className='max-w-4xl w-full mx-auto'>
           {pinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{pinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}
           <div className='flex items-center justify-between mb-6 px-2'><h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>Estaciones en {debouncedSearch || '...'}</h2><span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span></div>
-          {filteredResults.length === 0 && !loading && debouncedSearch && (<div className='py-20 text-center animate-cascade'><div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'><Search size={48} className='mx-auto text-gray-200 mb-4' /><p className='text-secondary astro-dark:text-white font-bold'>No hay resultados para "{search}"</p><p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p></div></div>)}
+          {filteredResults.length === 0 && !loading && debouncedSearch && (<div className='py-20 text-center animate-cascade'><div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'><Search size={48} className='mx-auto text-gray-200 mb-4' /><p className='text-secondary astro-dark:text-white font-black font-bold'>No hay resultados para "{debouncedSearch}"</p><p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p></div></div>)}
           <div className='grid grid-cols-1 gap-2'>{filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}</div>
           {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}
           {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white astro-dark:bg-white/5 border border-gray-200 astro-dark:border-white/10 text-secondary astro-dark:text-white font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
