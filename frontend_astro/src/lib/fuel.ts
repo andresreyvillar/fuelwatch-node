@@ -102,30 +102,46 @@ export async function getStats(location: string) {
 
 function getSearchConditions(query: string): string {
   const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
+  const upperQuery = query.toUpperCase();
+  
+  // 1. Clean query for broad matching (remove parentheses and articles)
+  let coreName = query.replace(/\(.*\)/g, '').trim();
+  for (const art of articles) {
+    if (coreName.toUpperCase().startsWith(art)) {
+      coreName = coreName.slice(art.length).trim();
+    }
+  }
+
+  // 2. Build conditions
   let conditions = [
     `localidad.ilike.%${query}%`,
     `cp.ilike.%${query}%`
   ];
 
-  const upperQuery = query.toUpperCase();
-  
-  // Case 1: Start with article -> Swap to 'NAME (ART)'
-  for (const art of articles) {
-    if (upperQuery.startsWith(art)) {
-      const mainName = query.slice(art.length).trim();
-      conditions.push(`localidad.ilike.%${mainName} (${art.trim()})%`);
-    }
-  }
-  
-  // Case 2: Contains parenthesis -> Swap back to 'ART NAME'
-  const parenMatch = query.match(/(.+) \((.+)\)$/i);
-  if (parenMatch) {
-    const name = parenMatch[1].trim();
-    const art = parenMatch[2].trim();
-    conditions.push(`localidad.ilike.%${art} ${name}%`);
-    // Also ensure we search for the exact string with parenthesis
-    conditions.push(`localidad.eq.${query}`);
+  if (coreName && coreName !== query) {
+    conditions.push(`localidad.ilike.%${coreName}%`);
   }
 
-  return conditions.join(',');
+  // 3. Handle the specific case of names with articles at the end in DB
+  for (const art of articles) {
+    if (upperQuery.startsWith(art)) {
+      const mainPart = query.slice(art.length).trim();
+      conditions.push(`localidad.ilike.%${mainPart} (${art.trim()})%`);
+    }
+  }
+
+  // 4. Handle input that might already have parentheses (like suggestions)
+  const parenMatch = query.match(/(.+) \((.+\))$/);
+  if (parenMatch) {
+    const name = parenMatch[1].trim();
+    conditions.push(`localidad.ilike.%${name}%`);
+  }
+
+  // 5. ESSENTIAL: Escape parentheses for Supabase .or() string
+  // Supabase .or() parser treats () as group separators.
+  // We must escape them with double backslash or remove them from the condition string
+  // since we already have coreName matching.
+  return conditions
+    .map(c => c.replace(/\(/g, '\\(').replace(/\)/g, '\\)'))
+    .join(',');
 }
