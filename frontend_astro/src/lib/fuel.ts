@@ -42,26 +42,25 @@ export async function updateDataFromMinistry() {
       fecha_actualizacion: new Date().toISOString(),
     });
 
-    if (diesel > 0 || gas95 > 0) {
+    if (diesel > 0 || gas95 > 0 || dieselExtra > 0 || gas98 > 0) {
       historyRows.push({
         station_id: id,
         fecha: today,
         diesel: diesel > 0 ? diesel : null,
-        gas95: gas95 > 0 ? gas95 : null
+        diesel_extra: dieselExtra > 0 ? dieselExtra : null,
+        gas95: gas95 > 0 ? gas95 : null,
+        gas98: gas98 > 0 ? gas98 : null
       });
     }
   }
 
   const client = checkSupabase();
-  
-  // Update stations
   const batchSize = 1000;
   for (let i = 0; i < stations.length; i += batchSize) {
     const batch = stations.slice(i, i + batchSize);
     await client.from('servicestations').upsert(batch, { onConflict: 'id_ss' });
   }
 
-  // Update new history table
   for (let i = 0; i < historyRows.length; i += batchSize) {
     const batch = historyRows.slice(i, i + batchSize);
     await client.from('price_history').upsert(batch, { onConflict: 'station_id,fecha' });
@@ -84,7 +83,6 @@ export async function searchStations(query: string, page: number = 1, limit: num
 
   if (error) throw error;
 
-  // Fetch yesterday's prices for trends
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -92,7 +90,7 @@ export async function searchStations(query: string, page: number = 1, limit: num
   const stationIds = data.map(s => s.id_ss);
   const { data: historyData } = await client
     .from('price_history')
-    .select('station_id, diesel, gas95')
+    .select('station_id, diesel, diesel_extra, gas95, gas98')
     .in('station_id', stationIds)
     .eq('fecha', yesterdayStr);
 

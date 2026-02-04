@@ -15,13 +15,13 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
   if (activeFilters.includes('diesel')) {
     fuels.push(
       { key: 'precio_diesel', label: 'Diésel', statKey: 'diesel', historyKey: 'diesel' },
-      { key: 'precio_diesel_extra', label: 'Extra', statKey: 'diesel_extra', historyKey: 'diesel' }
+      { key: 'precio_diesel_extra', label: 'Extra', statKey: 'diesel_extra', historyKey: 'diesel_extra' }
     );
   }
   if (activeFilters.includes('gasolina')) {
     fuels.push(
       { key: 'precio_gasolina_95', label: '95', statKey: 'gas95', historyKey: 'gas95' },
-      { key: 'precio_gasolina_98', label: '98', statKey: 'gas98', historyKey: 'gas95' }
+      { key: 'precio_gasolina_98', label: '98', statKey: 'gas98', historyKey: 'gas98' }
     );
   }
 
