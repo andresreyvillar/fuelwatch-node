@@ -5,7 +5,8 @@ export const GET: APIRoute = async ({ request }) => {
   try {
     // Validate token
     const token = new URL(request.url).searchParams.get('token');
-    const validToken = import.meta.env.CRON_TOKEN;
+    // Use process.env for private variables in Cloudflare Pages
+    const validToken = process.env.CRON_TOKEN;
 
     if (!token || token !== validToken) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
