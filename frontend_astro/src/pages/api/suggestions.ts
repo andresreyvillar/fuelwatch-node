@@ -6,17 +6,29 @@ export const GET: APIRoute = async ({ url }) => {
   if (query.length < 2) return new Response(JSON.stringify([]));
 
   try {
+    const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
+    let orConditions = `localidad.ilike.%${query}%`;
+
+    const upperQuery = query.toUpperCase();
+    for (const art of articles) {
+      if (upperQuery.startsWith(art)) {
+        const mainName = query.slice(art.length).trim();
+        const altName = `${mainName} (${art.trim()})`;
+        orConditions += `,localidad.ilike.%${altName}%`;
+      }
+    }
+
     const { data, error } = await supabase
       .from('servicestations')
       .select('localidad')
-      .ilike('localidad', `%${query}%`)
-      .limit(10);
+      .or(orConditions)
+      .limit(20);
 
     if (error) throw error;
 
     const uniqueLocations = Array.from(new Set(data.map(item => item.localidad))).sort();
 
-    return new Response(JSON.stringify(uniqueLocations), {
+    return new Response(JSON.stringify(uniqueLocations.slice(0, 10)), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
