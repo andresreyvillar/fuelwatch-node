@@ -52,9 +52,10 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
       }`}
       style={{ animationDelay: `${(index % 20) * 0.05}s` }}
     >
+      {/* Mobile only absolute button */}
       <button 
         onClick={() => onTogglePin?.(station)}
-        className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${
+        className={`absolute top-3 right-3 lg:hidden p-2 rounded-full transition-colors z-10 ${
           isPinned 
             ? 'text-primary bg-primary/10' 
             : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100 astro-dark:text-white/20 astro-dark:hover:text-white/40 astro-dark:hover:bg-white/5'
@@ -111,6 +112,18 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           );
         })}
       </div>
+
+      {/* Desktop only sidebar button */}
+      <button 
+        onClick={() => onTogglePin?.(station)}
+        className={`hidden lg:flex ml-10 p-3 rounded-2xl transition-all ${
+          isPinned 
+            ? 'text-primary bg-primary/10 ring-1 ring-primary/20' 
+            : 'text-gray-300 hover:text-secondary hover:bg-gray-50 astro-dark:text-white/20 astro-dark:hover:text-white astro-dark:hover:bg-white/5'
+        }`}
+      >
+        {isPinned ? <Lock size={20} /> : <LockKeyholeOpen size={20} />}
+      </button>
     </div>
   );
 };
