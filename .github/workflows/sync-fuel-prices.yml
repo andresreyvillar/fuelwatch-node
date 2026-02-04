@@ -20,14 +20,15 @@ jobs:
           ENDPOINT="https://fuelwatch.pages.dev/api/update-prices"
           echo "Calling: $ENDPOINT"
           
-          response=$(curl -s -w "||%{http_code}" "$ENDPOINT")
-          http_code=$(echo "$response" | awk -F"||" "{print \$NF}")
-          body=$(echo "$response" | sed "s/||\$http_code//")
+          # Capturar la respuesta y el código HTTP de forma robusta
+          full_response=$(curl -s -w "HTTP_STATUS:%{http_code}" "$ENDPOINT")
+          http_code=$(echo "$full_response" | grep -o "HTTP_STATUS:[0-9]*" | cut -d: -f2)
+          body=$(echo "$full_response" | sed "s/HTTP_STATUS:\$http_code//")
 
           echo "HTTP Code: $http_code"
           echo "Body: $body"
 
-          if [ "$http_code" = "200" ] && echo "$body" | grep -q ""success":true"; then
+          if [ "$http_code" = "200" ] && echo "$body" | grep -q "success.*true"; then
             echo "✅ Sync successful!"
             exit 0
           else
