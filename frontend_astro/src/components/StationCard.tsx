@@ -72,16 +72,17 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      <div className='mt-5 lg:mt-0 flex-1 flex items-center justify-between lg:justify-end gap-x-2 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0'>
+      {/* Mobile: Centered and distributed with fixed width items */}
+      <div className='mt-5 lg:mt-0 flex-1 flex items-center justify-center lg:justify-end gap-x-1 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0'>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
           const perc = getPricePercentage(price, f.statKey);
           const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
           return (
-            <div key={f.key} className='flex flex-col items-center lg:items-end flex-1 lg:flex-none min-w-0'>
+            <div key={f.key} className='flex flex-col items-center lg:items-end w-[72px] lg:w-auto lg:min-w-[80px] shrink-0'>
               <span className='text-[9px] lg:text-[10px] font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-0.5'>{f.label}</span>
-              <span className='text-sm lg:text-xl font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap'>{price.toFixed(3)}€</span>
+              <span className='text-[13px] lg:text-xl font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap'>{price.toFixed(3)}€</span>
               <div className='w-full lg:w-20 bg-gray-100 astro-dark:bg-white/5 h-1 rounded-full mt-2 overflow-hidden flex flex-row-reverse'>
                 <div className={`${barColor} h-full transition-all duration-500`} style={{ width: `${perc}%` }}></div>
               </div>
