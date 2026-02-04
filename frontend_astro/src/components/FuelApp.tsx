@@ -25,8 +25,8 @@ const FuelApp: React.FC = () => {
     setLoading(true);
     try {
       const [stationsRes, statsRes] = await Promise.all([
-        fetch(`http://localhost:3000/fuel/search?target=${search}&page=${currentPage}&limit=20`),
-        fetch(`http://localhost:3000/fuel/stats?location=${search}`)
+        fetch(`/api/search?target=${search}&page=${currentPage}&limit=20`),
+        fetch(`/api/stats?location=${search}`)
       ]);
       
       const stationsData = await stationsRes.json();
