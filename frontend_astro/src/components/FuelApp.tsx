@@ -116,9 +116,9 @@ const FuelApp: React.FC = () => {
 
       <div className='space-y-6'>
         <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Filtros</label>
-        <div className={`flex p-1 rounded-2xl border ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
-          <button onClick={() => setActiveFilters(['diesel'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
-          <button onClick={() => setActiveFilters(['gasolina'])} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
+        <div className={`flex p-2 rounded-2xl border gap-2 ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
+          <button onClick={() => setActiveFilters(['diesel'])} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
+          <button onClick={() => setActiveFilters(['gasolina'])} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
         </div>
 
         <div className='relative'>
@@ -152,7 +152,6 @@ const FuelApp: React.FC = () => {
 
   return (
     <div className='min-h-screen bg-gray-50 flex flex-col md:flex-row'>
-      {/* Desktop Sidebar */}
       <div className={`hidden md:flex flex-col bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'w-80 p-6' : 'w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full'>
           <div className='mb-10'>
@@ -162,9 +161,7 @@ const FuelApp: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Area */}
       <div className='flex-1 flex flex-col h-screen overflow-y-auto'>
-        {/* Header with hamburger */}
         <div className='bg-secondary md:bg-white p-4 flex items-center border-b border-gray-100 shadow-sm'>
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-secondary'}`}>
             {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
@@ -174,7 +171,6 @@ const FuelApp: React.FC = () => {
           </h1>
         </div>
 
-        {/* Mobile Filter Toggleable Area */}
         <div className={`md:hidden bg-secondary overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'max-h-[600px] border-b border-white/10' : 'max-h-0'}`}>
           <div className='p-6'>
             <FilterForm isDark={true} />
