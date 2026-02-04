@@ -11,7 +11,7 @@ export async function updateDataFromMinistry() {
 
   const response = await fetch(url);
   const data = await response.json();
-  
+
   const listaEESS = data.ListaEESSPrecio;
   const stations = [];
   const historyData: Record<number, number[]> = {};
@@ -39,16 +39,22 @@ export async function updateDataFromMinistry() {
       latitud: eess['Latitud'],
       fecha_actualizacion: new Date().toISOString(),
     });
-    
+
     historyData[id] = [diesel, dieselExtra, gas95, gas98];
   }
 
   const client = checkSupabase();
-  const { error: stationError } = await client
-    .from('servicestations')
-    .upsert(stations, { onConflict: 'id_ss' });
 
-  if (stationError) throw stationError;
+  // Upsert in batches to avoid timeout with large datasets
+  const batchSize = 1000;
+  for (let i = 0; i < stations.length; i += batchSize) {
+    const batch = stations.slice(i, i + batchSize);
+    const { error: stationError } = await client
+      .from('servicestations')
+      .upsert(batch, { onConflict: 'id_ss' });
+
+    if (stationError) throw stationError;
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const { error: historyError } = await client
