@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X } from 'lucide-react';
+import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
 import StationCard from './StationCard';
 
 const FilterForm = ({
@@ -83,12 +83,22 @@ const FuelApp: React.FC = () => {
   const [pinnedStations, setPinnedStations] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isBrowser, setIsBrowser] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
     
+    const savedTheme = localStorage.getItem('fuelwatch_theme') as 'light' | 'dark';
+    if (savedTheme) {
+      setTheme(savedTheme);
+      if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      setTheme('dark');
+      document.documentElement.classList.add('astro-dark');
+    }
+
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
@@ -124,6 +134,17 @@ const FuelApp: React.FC = () => {
       localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations));
     }
   }, [pinnedStations, isBrowser]);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('fuelwatch_theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('astro-dark');
+    } else {
+      document.documentElement.classList.remove('astro-dark');
+    }
+  };
 
   const fetchData = async (resetPage = true) => {
     if (!debouncedSearch) return;
@@ -203,15 +224,20 @@ const FuelApp: React.FC = () => {
   };
 
   return (
-    <div className='min-h-screen bg-gray-50 flex flex-col md:flex-row'>
+    <div className='min-h-screen bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col md:flex-row transition-colors duration-300'>
       {/* Desktop Sidebar */}
       <div className={`hidden md:flex flex-col bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'w-80 p-6' : 'w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full overflow-hidden'>
-          <div className='mb-10 shrink-0'>
+          <div className='mb-10 shrink-0 flex items-center justify-between'>
             <h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1>
           </div>
           <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'>
             <FilterForm isDark={true} {...filterProps} />
+          </div>
+          <div className='mt-6 pt-6 border-t border-white/5'>
+            <button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>
+              {theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}
+            </button>
           </div>
         </div>
       </div>
@@ -219,13 +245,17 @@ const FuelApp: React.FC = () => {
       {/* Main Area */}
       <div className='flex-1 flex flex-col h-screen overflow-y-auto'>
         {/* Header */}
-        <div className='bg-secondary md:bg-white p-4 flex items-center border-b border-gray-100 shadow-sm shrink-0'>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-secondary'}`}>
+        <div className='bg-secondary md:bg-white astro-dark:md:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors'>
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 astro-dark:bg-white/5 text-secondary astro-dark:text-white'}`}>
             {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
           </button>
-          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen ? 'md:hidden' : ''} md:text-secondary text-white`}>
+          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen && window.innerWidth >= 768 ? 'md:hidden' : ''} md:text-secondary text-white astro-dark:md:text-white`}>
             FUEL <span className='text-primary'>WATCH</span>
           </h1>
+          <div className='flex-1 md:hidden' />
+          <button onClick={toggleTheme} className='md:hidden p-2 bg-white/10 rounded-xl text-white'>
+            {theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}
+          </button>
         </div>
 
         {/* Mobile Filter Toggleable Area */}
@@ -245,7 +275,7 @@ const FuelApp: React.FC = () => {
           )}
 
           <div className='flex items-center justify-between mb-6 px-2'>
-            <h2 className='font-black text-secondary uppercase tracking-widest text-xs'>Estaciones en {debouncedSearch || '...'}</h2>
+            <h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>Estaciones en {debouncedSearch || '...'}</h2>
             <span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span>
           </div>
 
@@ -254,7 +284,7 @@ const FuelApp: React.FC = () => {
           </div>
 
           {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}
-          {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white border border-gray-200 text-secondary font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
+          {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white astro-dark:bg-white/5 border border-gray-200 astro-dark:border-white/10 text-secondary astro-dark:text-white font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
         </div>
       </div>
     </div>
