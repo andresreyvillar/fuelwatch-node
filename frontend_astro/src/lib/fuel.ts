@@ -1,5 +1,10 @@
 import { supabase } from './supabase';
 
+function checkSupabase() {
+  if (!supabase) throw new Error('Supabase client not initialized. Check your environment variables.');
+  return supabase;
+}
+
 export async function updateDataFromMinistry() {
   const url = import.meta.env.MINISTRY_API_URL;
   if (!url) throw new Error('MINISTRY_API_URL not configured');
@@ -38,14 +43,15 @@ export async function updateDataFromMinistry() {
     historyData[id] = [diesel, dieselExtra, gas95, gas98];
   }
 
-  const { error: stationError } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
+  const client = checkSupabase();
+  const { error: stationError } = await client
     .from('servicestations')
     .upsert(stations, { onConflict: 'id_ss' });
 
   if (stationError) throw stationError;
 
   const today = new Date().toISOString().split('T')[0];
-  const { error: historyError } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
+  const { error: historyError } = await client
     .from('historico')
     .upsert({
       fecha: today,
@@ -64,15 +70,14 @@ function parsePrice(value: string): number {
 
 export async function searchStations(query: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit;
+  const client = checkSupabase();
   
-  let supabaseQuery = supabase
+  const { data, count, error } = await client
     .from('servicestations')
     .select('*', { count: 'exact' })
     .or(`localidad.ilike.%${query}%,cp.ilike.%${query}%`)
     .order('cp', { ascending: true })
     .range(skip, skip + limit - 1);
-
-  const { data, count, error } = if (!supabase) throw new Error("Supabase client not initialized"); await supabaseQuery;
 
   if (error) throw error;
 
@@ -87,7 +92,8 @@ export async function searchStations(query: string, page: number = 1, limit: num
 }
 
 export async function getStats(location: string) {
-  const { data, error } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
+  const client = checkSupabase();
+  const { data, error } = await client
     .from('servicestations')
     .select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98')
     .or(`localidad.ilike.%${location}%,cp.ilike.%${location}%`);
