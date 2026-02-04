@@ -6,18 +6,19 @@ function checkSupabase() {
 }
 
 export async function updateDataFromMinistry() {
-  // Ministry API URL - hardcoded since Cloudflare Pages doesn't inject env vars in SSR runtime
   const url = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
-
   const response = await fetch(url);
   const data = await response.json();
-
   const listaEESS = data.ListaEESSPrecio;
   const stations = [];
   const historyData: Record<number, number[]> = {};
 
   for (const eess of listaEESS) {
     const id = parseInt(eess['IDEESS']);
+    const parsePrice = (value: string): number => {
+      if (!value) return 0;
+      return parseFloat(value.replace(',', '.'));
+    };
     const diesel = parsePrice(eess['Precio Gasoleo A']);
     const dieselExtra = parsePrice(eess['Precio Gasoleo Premium']);
     const gas95 = parsePrice(eess['Precio Gasolina 95 E5']);
@@ -39,62 +40,50 @@ export async function updateDataFromMinistry() {
       latitud: eess['Latitud'],
       fecha_actualizacion: new Date().toISOString(),
     });
-
     historyData[id] = [diesel, dieselExtra, gas95, gas98];
   }
 
   const client = checkSupabase();
-
-  // Upsert in batches to avoid timeout with large datasets
   const batchSize = 1000;
   for (let i = 0; i < stations.length; i += batchSize) {
     const batch = stations.slice(i, i + batchSize);
-    const { error: stationError } = await client
-      .from('servicestations')
-      .upsert(batch, { onConflict: 'id_ss' });
-
+    const { error: stationError } = await client.from('servicestations').upsert(batch, { onConflict: 'id_ss' });
     if (stationError) throw stationError;
   }
 
   const today = new Date().toISOString().split('T')[0];
-  const { error: historyError } = await client
-    .from('historico')
-    .upsert({
-      fecha: today,
-      datos: historyData,
-    }, { onConflict: 'fecha' });
-
+  const { error: historyError } = await client.from('historico').upsert({ fecha: today, datos: historyData }, { onConflict: 'fecha' });
   if (historyError) throw historyError;
 
   return { success: true, count: stations.length };
 }
 
-function parsePrice(value: string): number {
-  if (!value) return 0;
-  return parseFloat(value.replace(',', '.'));
-}
-
 export async function searchStations(query: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit;
   const client = checkSupabase();
+
+  // Handle cases like 'A Estrada' vs 'ESTRADA (A)'
+  const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
+  let orConditions = `localidad.ilike.%${query}%,cp.ilike.%${query}%`;
+
+  const upperQuery = query.toUpperCase();
+  for (const art of articles) {
+    if (upperQuery.startsWith(art)) {
+      const mainName = query.slice(art.length).trim();
+      const altName = `${mainName} (${art.trim()})`;
+      orConditions += `,localidad.ilike.%${altName}%`;
+    }
+  }
   
   const { data, count, error } = await client
     .from('servicestations')
     .select('*', { count: 'exact' })
-    .or(`localidad.ilike.%${query}%,cp.ilike.%${query}%`)
+    .or(orConditions)
     .order('cp', { ascending: true })
     .range(skip, skip + limit - 1);
 
   if (error) throw error;
-
-  return {
-    data,
-    meta: {
-      total: count || 0,
-      page,
-      lastPage: Math.ceil((count || 0) / limit),
-    }
-  };
+  return { data, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
 }
 
 export async function getStats(location: string) {
@@ -103,29 +92,18 @@ export async function getStats(location: string) {
     .from('servicestations')
     .select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98')
     .or(`localidad.ilike.%${location}%,cp.ilike.%${location}%`);
-
   if (error) throw error;
-
   if (!data || data.length === 0) return null;
 
   const dieselArr = data.map(s => s.precio_diesel).filter(p => p > 0);
   const gas95Arr = data.map(s => s.precio_gasolina_95).filter(p => p > 0);
   const dieselExtraArr = data.map(s => s.precio_diesel_extra).filter(p => p > 0);
   const gas98Arr = data.map(s => s.precio_gasolina_98).filter(p => p > 0);
-
   const getAvg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
 
   return {
-    diesel: {
-      avg: getAvg(dieselArr),
-      min: Math.min(...dieselArr) || 0,
-      max: Math.max(...dieselArr) || 0,
-    },
-    gas95: {
-      avg: getAvg(gas95Arr),
-      min: Math.min(...gas95Arr) || 0,
-      max: Math.max(...gas95Arr) || 0,
-    },
+    diesel: { avg: getAvg(dieselArr), min: Math.min(...dieselArr) || 0, max: Math.max(...dieselArr) || 0 },
+    gas95: { avg: getAvg(gas95Arr), min: Math.min(...gas95Arr) || 0, max: Math.max(...gas95Arr) || 0 },
     diesel_extra: { avg: getAvg(dieselExtraArr) },
     gas98: { avg: getAvg(gas98Arr) },
   };

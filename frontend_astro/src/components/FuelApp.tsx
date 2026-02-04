@@ -89,16 +89,11 @@ const FuelApp: React.FC = () => {
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
-    
     const savedTheme = localStorage.getItem('fuelwatch_theme') as 'light' | 'dark';
     if (savedTheme) {
       setTheme(savedTheme);
       if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark');
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setTheme('dark');
-      document.documentElement.classList.add('astro-dark');
     }
-
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(async (pos) => {
         try {
@@ -107,43 +102,30 @@ const FuelApp: React.FC = () => {
           const data = await res.json();
           const city = data.address.city || data.address.town || data.address.village || 'Madrid';
           setSearch(city);
-          setDebouncedSearch(city);
         } catch {
           setSearch('Madrid');
-          setDebouncedSearch('Madrid');
         }
-      }, () => {
-        setSearch('Madrid');
-        setDebouncedSearch('Madrid');
-      });
+      }, () => setSearch('Madrid'));
     } else {
       setSearch('Madrid');
-      setDebouncedSearch('Madrid');
     }
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 600);
+    const timer = setTimeout(() => { setDebouncedSearch(search); }, 600);
     return () => clearTimeout(timer);
   }, [search]);
 
   useEffect(() => {
-    if (isBrowser) {
-      localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations));
-    }
+    if (isBrowser) localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations));
   }, [pinnedStations, isBrowser]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
     localStorage.setItem('fuelwatch_theme', newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('astro-dark');
-    } else {
-      document.documentElement.classList.remove('astro-dark');
-    }
+    if (newTheme === 'dark') document.documentElement.classList.add('astro-dark');
+    else document.documentElement.classList.remove('astro-dark');
   };
 
   const fetchData = async (resetPage = true) => {
@@ -157,7 +139,6 @@ const FuelApp: React.FC = () => {
       ]);
       const stationsData = await stationsRes.json();
       const statsData = await statsRes.json();
-      
       if (resetPage) {
         setStations(stationsData.data || []);
         setPage(2);
@@ -207,71 +188,33 @@ const FuelApp: React.FC = () => {
     });
   }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters]);
 
-  const currentStats = stats ? (activeFilters.includes('diesel') ? stats.diesel : stats.gas95) : null;
-
-  const filterProps = {
-    search,
-    setSearch,
-    activeFilters,
-    setActiveFilters,
-    selectedBrands,
-    setSelectedBrands,
-    isBrandDropdownOpen,
-    setIsBrandDropdownOpen,
-    availableBrands,
-    tempPriceRange,
-    setPriceTempRange
-  };
+  const filterProps = { search, setSearch, activeFilters, setActiveFilters, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange };
 
   return (
     <div className='min-h-screen bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col md:flex-row transition-colors duration-300'>
-      {/* Desktop Sidebar */}
       <div className={`hidden md:flex flex-col bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'w-80 p-6' : 'w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full overflow-hidden'>
-          <div className='mb-10 shrink-0 flex items-center justify-between'>
-            <h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1>
-          </div>
-          <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'>
-            <FilterForm isDark={true} {...filterProps} />
-          </div>
-          <div className='mt-6 pt-6 border-t border-white/5'>
-            <button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>
-              {theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}
-            </button>
-          </div>
+          <div className='mb-10 shrink-0'><h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1></div>
+          <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'><FilterForm isDark={true} {...filterProps} /></div>
+          <div className='mt-6 pt-6 border-t border-white/5'><button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>{theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}</button></div>
         </div>
       </div>
 
-      {/* Main Area */}
       <div className='flex-1 flex flex-col h-screen overflow-y-auto'>
-        {/* Header */}
         <div className='bg-secondary md:bg-white astro-dark:md:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors'>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 astro-dark:bg-white/5 text-secondary astro-dark:text-white'}`}>
-            {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
-          </button>
-          {/* Logo visibility handled by CSS only to avoid ReferenceError: window is not defined */}
-          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen ? 'md:invisible' : ''} md:text-secondary text-white astro-dark:md:text-white transition-all`}>
-            FUEL <span className='text-primary'>WATCH</span>
-          </h1>
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 astro-dark:bg-white/5 text-secondary astro-dark:text-white'}`}>{isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}</button>
+          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen ? 'md:hidden' : ''} md:text-secondary text-white astro-dark:md:text-white transition-all`}>FUEL <span className='text-primary'>WATCH</span></h1>
           <div className='flex-1 md:hidden' />
-          <button onClick={toggleTheme} className='md:hidden p-2 bg-white/10 rounded-xl text-white'>
-            {theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}
-          </button>
+          <button onClick={toggleTheme} className='md:hidden p-2 bg-white/10 rounded-xl text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button>
         </div>
 
-        {/* Mobile Filter Toggleable Area */}
-        <div className={`md:hidden bg-secondary overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'max-h-[600px] border-b border-white/10' : 'max-h-0'}`}>
-          <div className='p-6'>
-            <FilterForm isDark={true} {...filterProps} />
-          </div>
-        </div>
+        <div className={`md:hidden bg-secondary overflow-hidden transition-all duration-300 ${isSidebarOpen ? 'max-h-[600px] border-b border-white/10' : 'max-h-0'}`}><div className='p-6'><FilterForm isDark={true} {...filterProps} /></div></div>
 
-        {/* Content */}
         <div className='max-w-4xl w-full mx-auto p-4 md:p-8'>
           {pinnedStations.length > 0 && (
             <div className='mb-12'>
               <h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>
-              {pinnedStations.map(s => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} />)}
+              {pinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}
             </div>
           )}
 
@@ -281,7 +224,7 @@ const FuelApp: React.FC = () => {
           </div>
 
           <div className='grid grid-cols-1 gap-2'>
-            {filteredResults.map(s => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} />)}
+            {filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}
           </div>
 
           {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}

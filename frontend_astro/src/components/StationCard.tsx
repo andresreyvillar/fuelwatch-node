@@ -7,9 +7,10 @@ interface StationProps {
   stats: any;
   isPinned?: boolean;
   onTogglePin?: (station: any) => void;
+  index?: number;
 }
 
-const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, isPinned, onTogglePin }) => {
+const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, isPinned, onTogglePin, index = 0 }) => {
   const fuels = [];
   if (activeFilters.includes('diesel')) {
     fuels.push(
@@ -32,11 +33,14 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
   };
 
   return (
-    <div className={`rounded-xl shadow-sm border p-4 mb-3 flex flex-col lg:flex-row lg:items-center justify-between hover:shadow-md transition-all group relative ${
-      isPinned 
-        ? 'bg-primary/5 border-primary/20 astro-dark:bg-primary/10 astro-dark:border-primary/30 shadow-inner' 
-        : 'bg-white border-gray-100 astro-dark:bg-[#151515] astro-dark:border-white/5'
-    }`}>
+    <div 
+      className={`rounded-xl shadow-sm border p-4 mb-3 flex flex-col lg:flex-row lg:items-center justify-between hover:shadow-md transition-all group relative animate-cascade ${
+        isPinned 
+          ? 'bg-primary/5 border-primary/20 astro-dark:bg-primary/10 astro-dark:border-primary/30 shadow-inner' 
+          : 'bg-white border-gray-100 astro-dark:bg-[#151515] astro-dark:border-white/5'
+      }`}
+      style={{ animationDelay: `${(index % 20) * 0.05}s` }}
+    >
       <button 
         onClick={() => onTogglePin?.(station)}
         className={`absolute top-2 right-2 p-2.5 rounded-full transition-colors z-10 ${isPinned ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100 astro-dark:text-white/20 astro-dark:hover:text-white/40 astro-dark:hover:bg-white/5'}`}
