@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Clock, Fuel, Lock, LockKeyholeOpen } from 'lucide-react';
+import { MapPin, Clock, Fuel, Lock, LockKeyholeOpen, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
 interface StationProps {
   station: any;
@@ -14,20 +14,17 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
   const fuels = [];
   if (activeFilters.includes('diesel')) {
     fuels.push(
-      { key: 'precio_diesel', label: 'Diésel', statKey: 'diesel' },
-      { key: 'precio_diesel_extra', label: 'Extra', statKey: 'diesel_extra' }
+      { key: 'precio_diesel', label: 'Diésel', statKey: 'diesel', historyKey: 'diesel' },
+      { key: 'precio_diesel_extra', label: 'Extra', statKey: 'diesel_extra', historyKey: 'diesel' }
     );
   }
   if (activeFilters.includes('gasolina')) {
     fuels.push(
-      { key: 'precio_gasolina_95', label: '95', statKey: 'gas95' },
-      { key: 'precio_gasolina_98', label: '98', statKey: 'gas98' }
+      { key: 'precio_gasolina_95', label: '95', statKey: 'gas95', historyKey: 'gas95' },
+      { key: 'precio_gasolina_98', label: '98', statKey: 'gas98', historyKey: 'gas95' }
     );
   }
 
-  // Check if only one fuel CATEGORY is selected (Diesel OR Gasoline)
-  // This happens if we have 2 fuels (e.g. 95 and 98) OR if only 1 is active total
-  // User wants it 50% bigger if only 1 category is active total
   const isLargeDisplay = activeFilters.length === 1;
 
   const getPricePercentage = (price: number, statKey: string) => {
@@ -35,6 +32,15 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     if (!s || !s.max || s.max === s.min || !price) return 50;
     const perc = ((price - s.min) / (s.max - s.min)) * 100;
     return Math.min(Math.max(perc, 5), 95);
+  };
+
+  const renderTrend = (currentPrice: number, historyKey: string) => {
+    const oldPrice = station.trend?.[historyKey];
+    if (!oldPrice || oldPrice === 0) return null;
+    
+    if (currentPrice > oldPrice) return <TrendingUp size={12} className='text-red-500 ml-1' />;
+    if (currentPrice < oldPrice) return <TrendingDown size={12} className='text-green-500 ml-1' />;
+    return <Minus size={12} className='text-gray-300 ml-1' />;
   };
 
   return (
@@ -48,7 +54,11 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     >
       <button 
         onClick={() => onTogglePin?.(station)}
-        className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${isPinned ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100 astro-dark:text-white/20 astro-dark:hover:text-white/40 astro-dark:hover:bg-white/5'}`}
+        className={`absolute top-3 right-3 p-2 rounded-full transition-colors z-10 ${
+          isPinned 
+            ? 'text-primary bg-primary/10' 
+            : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100 astro-dark:text-white/20 astro-dark:hover:text-white/40 astro-dark:hover:bg-white/5'
+        }`}
       >
         {isPinned ? <Lock size={16} /> : <LockKeyholeOpen size={16} />}
       </button>
@@ -77,7 +87,7 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      <div className={`mt-3 lg:mt-0 flex-1 flex items-center justify-center lg:justify-end gap-x-4 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0`}>
+      <div className='mt-3 lg:mt-0 flex-1 flex items-center justify-center lg:justify-end gap-x-2 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0'>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
@@ -87,9 +97,12 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
             <div key={f.key} className={`flex flex-col items-center lg:items-end flex-1 lg:flex-none min-w-0 ${isLargeDisplay ? 'scale-125 lg:scale-100' : ''}`}>
               <span className='text-[9px] lg:text-[10px] font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1'>{f.label}</span>
               <div className='flex flex-col items-center lg:items-end w-fit'>
-                <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[20px] lg:text-2xl' : 'text-[16px] lg:text-xl'}`}>
-                  {price.toFixed(3)}€
-                </span>
+                <div className='flex items-center'>
+                  <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[20px] lg:text-2xl' : 'text-[16px] lg:text-xl'}`}>
+                    {price.toFixed(3)}€
+                  </span>
+                  {renderTrend(price, f.historyKey)}
+                </div>
                 <div className='w-full bg-gray-100 astro-dark:bg-white/5 h-1 rounded-full mt-4 overflow-hidden flex flex-row-reverse'>
                   <div className={`${barColor} h-full transition-all duration-500`} style={{ width: `${perc}%` }}></div>
                 </div>
