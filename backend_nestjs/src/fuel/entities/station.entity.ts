@@ -42,7 +42,7 @@ export class Station {
   @Column()
   latitud: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   fecha_actualizacion: Date;
 
   /*

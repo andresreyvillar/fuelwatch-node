@@ -11,14 +11,14 @@ import { FuelModule } from './fuel/fuel.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
+        type: 'postgres',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASS'),
         database: configService.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false, // Disabled to avoid FK incompatibility errors
+        synchronize: true, // Enabled for automatic table creation
         logging: true, // Enable logging
       }),
       inject: [ConfigService],
