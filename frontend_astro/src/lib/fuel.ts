@@ -38,14 +38,14 @@ export async function updateDataFromMinistry() {
     historyData[id] = [diesel, dieselExtra, gas95, gas98];
   }
 
-  const { error: stationError } = await supabase
+  const { error: stationError } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
     .from('servicestations')
     .upsert(stations, { onConflict: 'id_ss' });
 
   if (stationError) throw stationError;
 
   const today = new Date().toISOString().split('T')[0];
-  const { error: historyError } = await supabase
+  const { error: historyError } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
     .from('historico')
     .upsert({
       fecha: today,
@@ -72,7 +72,7 @@ export async function searchStations(query: string, page: number = 1, limit: num
     .order('cp', { ascending: true })
     .range(skip, skip + limit - 1);
 
-  const { data, count, error } = await supabaseQuery;
+  const { data, count, error } = if (!supabase) throw new Error("Supabase client not initialized"); await supabaseQuery;
 
   if (error) throw error;
 
@@ -87,7 +87,7 @@ export async function searchStations(query: string, page: number = 1, limit: num
 }
 
 export async function getStats(location: string) {
-  const { data, error } = await supabase
+  const { data, error } = if (!supabase) throw new Error("Supabase client not initialized"); await supabase
     .from('servicestations')
     .select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98')
     .or(`localidad.ilike.%${location}%,cp.ilike.%${location}%`);
