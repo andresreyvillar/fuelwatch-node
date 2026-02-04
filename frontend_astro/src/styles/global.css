@@ -3,6 +3,7 @@
 @theme {
   --color-primary: #f59e0b;
   --color-secondary: #1f2937;
+  --breakpoint-desk: 800px;
 }
 
 @custom-variant astro-dark (&:where(.astro-dark, .astro-dark *));

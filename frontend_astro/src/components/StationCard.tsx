@@ -25,7 +25,6 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     );
   }
 
-  // Dynamic sizing logic: only 1 category active (Diesel OR Gasoline)
   const isLargeDisplay = activeFilters.length === 1;
 
   const getPricePercentage = (price: number, statKey: string) => {
@@ -39,13 +38,13 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     const oldPrice = station.trend?.[historyKey];
     if (!oldPrice || oldPrice === 0) return null;
     if (currentPrice > oldPrice) return <TrendingUp size={isLargeDisplay ? 14 : 12} className='text-red-500 ml-1' />;
-    if (currentPrice < oldPrice) return <TrendingDown size={isLargeDisplay ? 14 : 12} className='text-green-500 ml-1' />;
+    if (currentPrice < oldPrice) return <TrendingDown size={12} className='text-green-500 ml-1' />;
     return <Minus size={isLargeDisplay ? 14 : 12} className='text-gray-300 ml-1' />;
   };
 
   return (
     <div 
-      className={`rounded-2xl shadow-sm border p-4 lg:py-4 lg:px-6 mb-3 flex flex-col lg:flex-row lg:items-center justify-between hover:shadow-md transition-all group relative animate-cascade ${
+      className={`rounded-2xl shadow-sm border p-4 desk:py-4 desk:px-6 mb-3 flex flex-col desk:flex-row desk:items-center justify-between hover:shadow-md transition-all group relative animate-cascade ${
         isPinned 
           ? 'bg-primary/5 border-primary/20 astro-dark:bg-primary/10 astro-dark:border-primary/30 shadow-inner' 
           : 'bg-white border-gray-100 astro-dark:bg-[#151515] astro-dark:border-white/5'
@@ -54,15 +53,15 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     >
       <button 
         onClick={() => onTogglePin?.(station)}
-        className={`absolute top-3 right-3 lg:hidden p-2 rounded-full transition-colors z-10 ${
+        className={`absolute top-3 right-3 desk:hidden p-2 rounded-full transition-colors z-10 ${
           isPinned ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100 astro-dark:text-white/20'
         }`}
       >
         {isPinned ? <Lock size={16} /> : <LockKeyholeOpen size={16} />}
       </button>
 
-      <div className='flex items-center space-x-4 lg:w-1/3 min-w-0'>
-        <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${
+      <div className='flex items-center space-x-4 desk:w-1/3 min-w-0'>
+        <div className={`w-10 h-10 desk:w-12 desk:h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${
           station.rotulo.includes('REPSOL') ? 'bg-orange-50 text-orange-500 astro-dark:bg-orange-500/10' :
           station.rotulo.includes('CEPSA') ? 'bg-red-50 text-red-500 astro-dark:bg-red-500/10' :
           station.rotulo.includes('BP') ? 'bg-green-50 text-green-500 astro-dark:bg-green-500/10' :
@@ -72,8 +71,8 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
         
         <div className='flex-1 min-w-0'>
-          <h3 className='font-black text-secondary astro-dark:text-white text-sm lg:text-base leading-tight uppercase truncate'>{station.rotulo}</h3>
-          <div className='flex items-center text-gray-400 astro-dark:text-white/40 text-[10px] lg:text-xs mt-1'>
+          <h3 className='font-black text-secondary astro-dark:text-white text-sm desk:text-base leading-tight uppercase truncate'>{station.rotulo}</h3>
+          <div className='flex items-center text-gray-400 astro-dark:text-white/40 text-[10px] desk:text-xs mt-1'>
             <MapPin size={10} className='mr-1 shrink-0' />
             <span className='truncate'>{station.direccion}</span>
           </div>
@@ -84,18 +83,18 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      <div className='mt-4 lg:mt-0 flex-1 flex items-center justify-between lg:justify-center gap-x-2 lg:gap-x-8 border-t lg:border-t-0 border-gray-100/30 astro-dark:border-white/5 pt-4 lg:pt-0'>
+      <div className='mt-4 desk:mt-0 flex-1 flex items-center justify-between desk:justify-center gap-x-2 desk:gap-x-8 border-t desk:border-t-0 border-gray-100/30 astro-dark:border-white/5 pt-4 desk:pt-0'>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
           const perc = getPricePercentage(price, f.statKey);
           const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
           return (
-            <div key={f.key} className={`flex flex-col items-center flex-1 lg:flex-none ${isLargeDisplay ? 'min-w-[100px] lg:min-w-[120px]' : 'min-w-[72px] lg:min-w-[90px]'}`}>
-              <span className={`font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1 ${isLargeDisplay ? 'text-[10px] lg:text-xs' : 'text-[9px] lg:text-[10px]'}`}>{f.label}</span>
+            <div key={f.key} className={`flex flex-col items-center flex-1 desk:flex-none ${isLargeDisplay ? 'min-w-[100px] desk:min-w-[120px]' : 'min-w-[72px] desk:min-w-[90px]'}`}>
+              <span className={`font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1 ${isLargeDisplay ? 'text-[10px] desk:text-xs' : 'text-[9px] desk:text-[10px]'}`}>{f.label}</span>
               <div className='flex flex-col items-center w-fit'>
                 <div className='flex items-center'>
-                  <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[22px] lg:text-3xl' : 'text-[16px] lg:text-xl'}`}>
+                  <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[22px] desk:text-3xl' : 'text-[16px] desk:text-xl'}`}>
                     {price.toFixed(3)}€
                   </span>
                   {renderTrend(price, f.historyKey)}
@@ -109,7 +108,7 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         })}
       </div>
 
-      <div className='hidden lg:flex lg:w-20 justify-end flex-shrink-0'>
+      <div className='hidden desk:flex desk:w-20 justify-end flex-shrink-0'>
         <button 
           onClick={() => onTogglePin?.(station)}
           className={`p-3 rounded-2xl transition-all ${
