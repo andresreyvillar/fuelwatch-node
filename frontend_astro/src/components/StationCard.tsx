@@ -25,6 +25,11 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     );
   }
 
+  // Check if only one fuel CATEGORY is selected (Diesel OR Gasoline)
+  // This happens if we have 2 fuels (e.g. 95 and 98) OR if only 1 is active total
+  // User wants it 50% bigger if only 1 category is active total
+  const isLargeDisplay = activeFilters.length === 1;
+
   const getPricePercentage = (price: number, statKey: string) => {
     const s = stats?.[statKey];
     if (!s || !s.max || s.max === s.min || !price) return 50;
@@ -72,17 +77,19 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      <div className='mt-3 lg:mt-0 flex-1 flex items-center justify-center lg:justify-end gap-x-2 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0'>
+      <div className={`mt-3 lg:mt-0 flex-1 flex items-center justify-center lg:justify-end gap-x-4 lg:gap-x-10 border-t lg:border-t-0 lg:border-l border-gray-50 astro-dark:border-white/5 pt-4 lg:pt-0`}>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
           const perc = getPricePercentage(price, f.statKey);
           const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
           return (
-            <div key={f.key} className='flex flex-col items-center lg:items-end flex-1 lg:flex-none min-w-0'>
+            <div key={f.key} className={`flex flex-col items-center lg:items-end flex-1 lg:flex-none min-w-0 ${isLargeDisplay ? 'scale-125 lg:scale-100' : ''}`}>
               <span className='text-[9px] lg:text-[10px] font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1'>{f.label}</span>
               <div className='flex flex-col items-center lg:items-end w-fit'>
-                <span className='text-[16px] lg:text-xl font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap'>{price.toFixed(3)}€</span>
+                <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[20px] lg:text-2xl' : 'text-[16px] lg:text-xl'}`}>
+                  {price.toFixed(3)}€
+                </span>
                 <div className='w-full bg-gray-100 astro-dark:bg-white/5 h-1 rounded-full mt-4 overflow-hidden flex flex-row-reverse'>
                   <div className={`${barColor} h-full transition-all duration-500`} style={{ width: `${perc}%` }}></div>
                 </div>
