@@ -3,63 +3,61 @@ import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, M
 import StationCard from './StationCard';
 
 const FilterForm = ({
-  isDark, search, setSearch, activeFilters, setActiveFilters, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused
-}: any) => {
-  const toggleFilter = (f: string) => {
-    if (activeFilters.includes(f)) {
-      if (activeFilters.length > 1) setActiveFilters(activeFilters.filter((x: string) => x !== f));
-    } else {
-      setActiveFilters([...activeFilters, f]);
-    }
-  };
-
-  return (
-    <div className='space-y-6'>
-      <div>
-        <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-3 ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Búsqueda</label>
-        <div className='relative'>
-          <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/40' : 'text-gray-400'}`} size={18} />
-          <input type='text' value={search} onChange={e => setSearch(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} placeholder='Ciudad o CP...' />
-          {isSearchFocused && suggestions.length > 0 && (
-            <div className={`absolute z-[70] w-full mt-2 border shadow-2xl rounded-2xl overflow-hidden ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
-              {suggestions.map((s: string) => (
-                <div key={s} onClick={() => onSelectSuggestion(s)} className={`px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors ${isDark ? 'text-white border-b border-white/5' : 'text-secondary border-b border-gray-50'}`}>{s}</div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className='space-y-6'>
-        <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Filtros</label>
-        <div className={`flex p-2 rounded-2xl border gap-2 ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
-          <button onClick={() => toggleFilter('diesel')} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
-          <button onClick={() => toggleFilter('gasolina')} className={`flex-1 py-3 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
-        </div>
-        <div className='relative'>
-          <button onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)} className={`w-full flex items-center justify-between border rounded-2xl px-4 py-3 font-bold transition-all ${isDark ? 'bg-white/5 border-white/5 text-white hover:bg-white/10' : 'bg-gray-50 border-gray-100 text-secondary hover:bg-gray-100'}`}>
-            <span className='truncate'>{selectedBrands.length ? `${selectedBrands.length} Marcas` : 'Todas las marcas'}</span>
-            <ChevronDown size={18} className={`transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {isBrandDropdownOpen && (
-            <div className={`absolute z-50 w-full mt-2 border shadow-2xl rounded-2xl max-h-60 overflow-y-auto p-2 scrollbar-hide ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
-              <button onClick={() => setSelectedBrands([])} className='w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg mb-1'>Limpiar selección</button>
-              {availableBrands.map((b: string) => (
-                <div key={b} onClick={() => setSelectedBrands((prev: string[]) => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b])} className={`flex items-center p-2 hover:bg-white/5 cursor-pointer rounded-lg ${isDark ? 'text-white' : 'text-secondary'}`}>
-                  <div className={`w-4 h-4 border rounded mr-3 ${selectedBrands.includes(b) ? 'bg-primary border-primary' : isDark ? 'border-white/20' : 'border-gray-200'}`} />
-                  <span className='text-sm'>{b}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <div>
-          <div className='flex justify-between text-[10px] font-black uppercase mb-3 ml-1'><span className={isDark ? 'text-white/40' : 'text-gray-400'}>Precio Máx</span><span className='text-primary'>{tempPriceRange.max.toFixed(2)}€</span></div>
-          <input type='range' min='1' max='2.5' step='0.01' value={tempPriceRange.max} onChange={e => setPriceTempRange((p: any) => ({...p, max: parseFloat(e.target.value)}))} className='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary' />
-        </div>
+  isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused
+}: any) => (
+  <div className='space-y-6'>
+    <div>
+      <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-3 ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Búsqueda</label>
+      <div className='relative'>
+        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/40' : 'text-gray-400'}`} size={18} />
+        <input 
+          type='text' 
+          value={search} 
+          onChange={e => setSearch(e.target.value)} 
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+          className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} 
+          placeholder='Ciudad o CP...' 
+        />
+        {isSearchFocused && suggestions.length > 0 && (
+          <div className={`absolute z-[70] w-full mt-2 border shadow-2xl rounded-2xl overflow-hidden ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
+            {suggestions.map((s: string) => (
+              <div key={s} onClick={() => onSelectSuggestion(s)} className={`px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors ${isDark ? 'text-white border-b border-white/5' : 'text-secondary border-b border-gray-50'}`}>{s}</div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
-  );
-};
+    <div className='space-y-6'>
+      <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Filtros</label>
+      <div className={`flex p-2 rounded-2xl border gap-2 ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
+        <button onClick={() => onToggleFilter('diesel')} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
+        <button onClick={() => onToggleFilter('gasolina')} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
+      </div>
+      <div className='relative'>
+        <button onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)} className={`w-full flex items-center justify-between border rounded-2xl px-4 py-3 font-bold transition-all ${isDark ? 'bg-white/5 border-white/5 text-white hover:bg-white/10' : 'bg-gray-50 border-gray-100 text-secondary hover:bg-gray-100'}`}>
+          <span className='truncate'>{selectedBrands.length ? `${selectedBrands.length} Marcas` : 'Todas las marcas'}</span>
+          <ChevronDown size={18} className={`transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isBrandDropdownOpen && (
+          <div className={`absolute z-50 w-full mt-2 border shadow-2xl rounded-2xl max-h-60 overflow-y-auto p-2 scrollbar-hide ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
+            <button onClick={() => setSelectedBrands([])} className='w-full text-left px-3 py-2 text-xs font-bold text-primary hover:bg-primary/5 rounded-lg mb-1'>Limpiar selección</button>
+            {availableBrands.map((b: string) => (
+              <div key={b} onClick={() => setSelectedBrands((prev: string[]) => prev.includes(b) ? prev.filter(x => x !== b) : [...prev, b])} className={`flex items-center p-2 hover:bg-white/5 cursor-pointer rounded-lg ${isDark ? 'text-white' : 'text-secondary'}`}>
+                <div className={`w-4 h-4 border rounded mr-3 ${selectedBrands.includes(b) ? 'bg-primary border-primary' : isDark ? 'border-white/20' : 'border-gray-200'}`} />
+                <span className='text-sm'>{b}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div>
+        <div className='flex justify-between text-[10px] font-black uppercase mb-3 ml-1'><span className={isDark ? 'text-white/40' : 'text-gray-400'}>Precio Máx</span><span className='text-primary'>{tempPriceRange.max.toFixed(2)}€</span></div>
+        <input type='range' min='1' max='2.5' step='0.01' value={tempPriceRange.max} onChange={e => setPriceTempRange((p: any) => ({...p, max: parseFloat(e.target.value)}))} className='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary' />
+      </div>
+    </div>
+  </div>
+);
 
 const FuelApp: React.FC = () => {
   const [stations, setStations] = useState<any[]>([]);
@@ -127,6 +125,15 @@ const FuelApp: React.FC = () => {
     if (newTheme === 'dark') document.documentElement.classList.add('astro-dark'); else document.documentElement.classList.remove('astro-dark');
   };
 
+  const onToggleFilter = (f: string) => {
+    setActiveFilters(prev => {
+      if (prev.includes(f)) {
+        return prev.length > 1 ? prev.filter(x => x !== f) : prev;
+      }
+      return [...prev, f];
+    });
+  };
+
   const fetchData = async (resetPage = true) => {
     if (!debouncedSearch) return;
     const currentPage = resetPage ? 1 : page;
@@ -181,19 +188,22 @@ const FuelApp: React.FC = () => {
     });
   }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters]);
 
-  const filterProps = { search, setSearch, activeFilters, setActiveFilters, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); } };
+  const filterProps = {
+    search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused,
+    onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); }
+  };
 
   return (
-    <div className='h-screen bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col lg:flex-row transition-colors duration-300 overflow-hidden'>
+    <div className='h-screen w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col lg:flex-row transition-colors duration-300 overflow-hidden'>
       {isSidebarOpen && <div className='fixed inset-0 z-[100] lg:hidden bg-secondary/20 backdrop-blur-sm' onClick={() => setIsSidebarOpen(false)} />}
-      <aside className={`fixed lg:relative z-[110] h-full bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'translate-x-0 w-80 p-6' : '-translate-x-full lg:translate-x-0 lg:w-0 overflow-hidden p-0'}`}>
+      <aside className={`fixed lg:relative z-[110] h-screen bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 flex-shrink-0 ${isSidebarOpen ? 'translate-x-0 w-80 p-6' : '-translate-x-full lg:translate-x-0 lg:w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full overflow-hidden'>
           <div className='mb-10 shrink-0 flex items-center justify-between'><h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1><button onClick={() => setIsSidebarOpen(false)} className='lg:hidden text-white/40 hover:text-white'><X size={24}/></button></div>
           <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'><FilterForm isDark={true} {...filterProps} /></div>
           <div className='mt-6 pt-6 border-t border-white/5 shrink-0'><button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>{theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}</button></div>
         </div>
       </aside>
-      <div className='flex-1 flex flex-col h-full overflow-hidden'>
+      <div className='flex-1 flex flex-col h-screen overflow-hidden'>
         <header className='bg-secondary lg:bg-white astro-dark:lg:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors z-50 sticky top-0'>
           <button onClick={() => setIsSidebarOpen(true)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'lg:opacity-100' : 'bg-white/10 lg:bg-gray-100 text-white lg:text-secondary astro-dark:lg:text-white'}`}><Menu size={24}/></button>
           <h1 className={`text-xl font-black ml-4 lg:text-secondary text-white astro-dark:md:text-white transition-all`}>FUEL <span className='text-primary'>WATCH</span></h1>
