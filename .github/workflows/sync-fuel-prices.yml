@@ -13,8 +13,8 @@ jobs:
     name: Update fuel prices from Ministry API
 
     env:
-      # Reemplaza con tu dominio real
-      SYNC_URL: ${{ secrets.SYNC_URL || 'https://tu-dominio.com' }}
+      # Tu dominio en Cloudflare Pages
+      SYNC_URL: ${{ secrets.SYNC_URL || 'https://fuelwatch.pages.dev' }}
 
     steps:
       - name: Checkout code
@@ -34,29 +34,32 @@ jobs:
       - name: Sync fuel prices
         run: |
           echo "Starting fuel price synchronization..."
+          echo "SYNC_URL: $SYNC_URL"
+          echo "Token is configured: ${{ secrets.CRON_TOKEN != '' }}"
 
           ENDPOINT="$SYNC_URL/api/update-prices?token=${{ secrets.CRON_TOKEN }}"
+          echo "Calling endpoint..."
 
-          response=$(curl -s -w "\n%{http_code}" "$ENDPOINT")
+          # Usa -v para verbose y -i para headers
+          http_response=$(curl -s -i "$ENDPOINT" 2>&1)
 
-          # Separa la respuesta del código HTTP
-          http_code=$(echo "$response" | tail -n 1)
-          body=$(echo "$response" | head -n -1)
+          echo "Full response:"
+          echo "$http_response"
 
-          echo "HTTP Status: $http_code"
-          echo "Response: $body"
+          # Extrae código HTTP de la primera línea
+          http_code=$(echo "$http_response" | head -1 | grep -oP '\d+' | head -1)
+          echo "HTTP Code: $http_code"
 
-          # Valida que la respuesta sea exitosa
-          if [ "$http_code" = "200" ]; then
-            if echo "$body" | grep -q '"success":true'; then
-              echo "✅ Sync successful!"
-              exit 0
-            else
-              echo "❌ Sync returned error"
-              exit 1
-            fi
+          # Extrae body (después de líneas vacías)
+          body=$(echo "$http_response" | tail -n +2 | grep -A 100 '^$' | tail -n +2)
+          echo "Body: $body"
+
+          # Valida
+          if [ "$http_code" = "200" ] && echo "$body" | grep -q '"success":true'; then
+            echo "✅ Sync successful!"
+            exit 0
           else
-            echo "❌ Sync failed with HTTP $http_code"
+            echo "❌ Sync failed (HTTP: $http_code)"
             exit 1
           fi
 
