@@ -7,22 +7,22 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
-    let orConditions = `localidad.ilike.%${query}%`;
+    let orConditions = [`localidad.ilike.%${query}%`];
 
     const upperQuery = query.toUpperCase();
     for (const art of articles) {
       if (upperQuery.startsWith(art)) {
         const mainName = query.slice(art.length).trim();
-        const altName = `${mainName} (${art.trim()})`;
-        orConditions += `,localidad.ilike.%${altName}%`;
+        // If we have 'A COR', search for things like 'COR%(A)'
+        orConditions.push(`localidad.ilike.%${mainName}%(${art.trim()})%`);
       }
     }
 
     const { data, error } = await supabase
       .from('servicestations')
       .select('localidad')
-      .or(orConditions)
-      .limit(20);
+      .or(orConditions.join(','))
+      .limit(50);
 
     if (error) throw error;
 
