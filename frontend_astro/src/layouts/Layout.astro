@@ -1,1 +1,41 @@
-%s
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang='es'>
+	<head>
+		<meta charset='UTF-8' />
+		<meta name='description' content='Fuel Watch - Precios de gasolina en tiempo real' />
+		<meta name='viewport' content='width=device-width' />
+		<link rel='icon' type='image/svg+xml' href='/favicon.svg' />
+		<meta name='generator' content={Astro.generator} />
+		<title>{title}</title>
+		<meta name='theme-color' content='#1f2937' id='meta-theme-color' />
+		<script is:inline>
+		  function updateThemeColor() {
+			const meta = document.getElementById('meta-theme-color');
+			const isDark = document.documentElement.classList.contains('astro-dark');
+			if (meta) {
+			  meta.setAttribute('content', isDark ? '#0a0a0a' : '#1f2937');
+			}
+		  }
+		  const observer = new MutationObserver((mutations) => {
+			mutations.forEach((mutation) => {
+			  if (mutation.attributeName === 'class') updateThemeColor();
+			});
+		  });
+		  observer.observe(document.documentElement, { attributes: true });
+		  window.addEventListener('DOMContentLoaded', updateThemeColor);
+		</script>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
