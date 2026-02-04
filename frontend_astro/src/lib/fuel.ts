@@ -61,19 +61,7 @@ export async function updateDataFromMinistry() {
 export async function searchStations(query: string, page: number = 1, limit: number = 20) {
   const skip = (page - 1) * limit;
   const client = checkSupabase();
-
-  // Handle cases like 'A Estrada' vs 'ESTRADA (A)'
-  const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
-  let orConditions = `localidad.ilike.%${query}%,cp.ilike.%${query}%`;
-
-  const upperQuery = query.toUpperCase();
-  for (const art of articles) {
-    if (upperQuery.startsWith(art)) {
-      const mainName = query.slice(art.length).trim();
-      const altName = `${mainName} (${art.trim()})`;
-      orConditions += `,localidad.ilike.%${altName}%`;
-    }
-  }
+  const orConditions = getSearchConditions(query);
   
   const { data, count, error } = await client
     .from('servicestations')
@@ -88,10 +76,13 @@ export async function searchStations(query: string, page: number = 1, limit: num
 
 export async function getStats(location: string) {
   const client = checkSupabase();
+  const orConditions = getSearchConditions(location);
+  
   const { data, error } = await client
     .from('servicestations')
     .select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98')
-    .or(`localidad.ilike.%${location}%,cp.ilike.%${location}%`);
+    .or(orConditions);
+    
   if (error) throw error;
   if (!data || data.length === 0) return null;
 
@@ -107,4 +98,34 @@ export async function getStats(location: string) {
     diesel_extra: { avg: getAvg(dieselExtraArr) },
     gas98: { avg: getAvg(gas98Arr) },
   };
+}
+
+function getSearchConditions(query: string): string {
+  const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
+  let conditions = [
+    `localidad.ilike.%${query}%`,
+    `cp.ilike.%${query}%`
+  ];
+
+  const upperQuery = query.toUpperCase();
+  
+  // Case 1: Start with article -> Swap to 'NAME (ART)'
+  for (const art of articles) {
+    if (upperQuery.startsWith(art)) {
+      const mainName = query.slice(art.length).trim();
+      conditions.push(`localidad.ilike.%${mainName} (${art.trim()})%`);
+    }
+  }
+  
+  // Case 2: Contains parenthesis -> Swap back to 'ART NAME'
+  const parenMatch = query.match(/(.+) \((.+)\)$/i);
+  if (parenMatch) {
+    const name = parenMatch[1].trim();
+    const art = parenMatch[2].trim();
+    conditions.push(`localidad.ilike.%${art} ${name}%`);
+    // Also ensure we search for the exact string with parenthesis
+    conditions.push(`localidad.eq.${query}`);
+  }
+
+  return conditions.join(',');
 }
