@@ -249,7 +249,8 @@ const FuelApp: React.FC = () => {
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 astro-dark:bg-white/5 text-secondary astro-dark:text-white'}`}>
             {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
           </button>
-          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen && window.innerWidth >= 768 ? 'md:hidden' : ''} md:text-secondary text-white astro-dark:md:text-white`}>
+          {/* Logo visibility handled by CSS only to avoid ReferenceError: window is not defined */}
+          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen ? 'md:invisible' : ''} md:text-secondary text-white astro-dark:md:text-white transition-all`}>
             FUEL <span className='text-primary'>WATCH</span>
           </h1>
           <div className='flex-1 md:hidden' />
