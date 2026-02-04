@@ -35,9 +35,10 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
 
   return (
     <div className={`rounded-xl shadow-sm border p-4 mb-3 flex flex-col lg:flex-row lg:items-center justify-between hover:shadow-md transition-all group relative ${isPinned ? 'bg-primary/5 border-primary/20 shadow-inner' : 'bg-white border-gray-100'}`}>
+      {/* Pin Button with more padding around it */}
       <button 
         onClick={() => onTogglePin?.(station)}
-        className={`absolute top-3 right-3 p-2 rounded-full transition-colors ${isPinned ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}
+        className={`absolute top-2 right-2 p-2.5 rounded-full transition-colors z-10 ${isPinned ? 'text-primary bg-primary/10' : 'text-gray-300 hover:text-gray-500 hover:bg-gray-100'}`}
       >
         {isPinned ? <Lock size={16} /> : <LockKeyholeOpen size={16} />}
       </button>
@@ -52,7 +53,7 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           <Fuel size={24} />
         </div>
         
-        <div className='flex-1 min-w-0 pr-8'>
+        <div className='flex-1 min-w-0 pr-12'>
           <h3 className='font-black text-secondary text-base leading-tight uppercase truncate'>{station.rotulo}</h3>
           <div className='flex items-center text-gray-400 text-xs mt-1'>
             <MapPin size={12} className='mr-1 shrink-0' />
@@ -65,7 +66,8 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      <div className='mt-4 lg:mt-0 flex-1 flex flex-wrap gap-x-8 gap-y-4 lg:pl-8 border-t lg:border-t-0 lg:border-l border-gray-50 pt-4 lg:pt-0 justify-end pr-4'>
+      {/* Increased spacing (pr-12 on brand info and gap-x-8 here) */}
+      <div className='mt-4 lg:mt-0 flex-1 flex flex-wrap gap-x-10 gap-y-4 lg:pl-8 border-t lg:border-t-0 lg:border-l border-gray-50 pt-4 lg:pt-0 justify-end lg:pr-10'>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
