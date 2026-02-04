@@ -16,23 +16,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Validate configuration
-        run: |
-          if [ -z "${{ secrets.CRON_TOKEN }}" ]; then
-            echo "❌ Error: CRON_TOKEN secret is not configured"
-            exit 1
-          fi
-          echo "✅ CRON_TOKEN is configured"
-
       - name: Sync fuel prices
         run: |
           echo "Starting fuel price synchronization..."
 
-          SYNC_URL="https://fuelwatch.pages.dev"
-          CRON_TOKEN="${{ secrets.CRON_TOKEN }}"
-          ENDPOINT="$SYNC_URL/api/update-prices?token=$CRON_TOKEN"
+          ENDPOINT="https://fuelwatch.pages.dev/api/update-prices"
 
-          echo "Calling: $SYNC_URL/api/update-prices"
+          echo "Calling: $ENDPOINT"
           echo "Calling endpoint..."
 
           # Usa -v para verbose y -i para headers

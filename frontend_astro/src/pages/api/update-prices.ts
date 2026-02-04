@@ -1,31 +1,10 @@
 import type { APIRoute } from 'astro';
 import { updateDataFromMinistry } from '../../lib/fuel';
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async () => {
   try {
-    // Debug: Check if CRON_TOKEN is available
-    const token = new URL(request.url).searchParams.get('token');
-    const validToken = process.env.CRON_TOKEN;
-
-    console.log('[DEBUG] Token from request:', token ? '***' : 'missing');
-    console.log('[DEBUG] CRON_TOKEN env var exists:', !!validToken);
-    console.log('[DEBUG] CRON_TOKEN value:', validToken ? '***' : 'undefined');
-    console.log('[DEBUG] All env vars:', Object.keys(process.env).filter(k => k.includes('TOKEN') || k.includes('CRON')));
-
-    if (!token || token !== validToken) {
-      return new Response(JSON.stringify({
-        error: 'Unauthorized',
-        debug: {
-          tokenReceived: !!token,
-          envVarExists: !!validToken,
-          envVarValue: validToken ? 'configured' : 'missing'
-        }
-      }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    // Note: This endpoint is only called from GitHub Actions workflow
+    // Authentication is handled by the workflow itself (it's in a private repo)
     const result = await updateDataFromMinistry();
     return new Response(JSON.stringify(result), {
       status: 200,
