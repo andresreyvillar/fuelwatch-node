@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X } from 'lucide-react';
 import StationCard from './StationCard';
 
-// Move FilterForm outside to prevent re-mounting and focus loss
 const FilterForm = ({
   isDark,
   search,
@@ -83,9 +82,10 @@ const FuelApp: React.FC = () => {
   const [tempPriceRange, setPriceTempRange] = useState({ min: 0, max: 3 });
   const [pinnedStations, setPinnedStations] = useState<any[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isBrowser, setIsBrowser] = useState(false);
 
-  // Geolocation and Pins initialization
   useEffect(() => {
+    setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
     
@@ -112,7 +112,6 @@ const FuelApp: React.FC = () => {
     }
   }, []);
 
-  // Handle Search Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -120,10 +119,11 @@ const FuelApp: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Handle Pins Persistence
   useEffect(() => {
-    localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations));
-  }, [pinnedStations]);
+    if (isBrowser) {
+      localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations));
+    }
+  }, [pinnedStations, isBrowser]);
 
   const fetchData = async (resetPage = true) => {
     if (!debouncedSearch) return;
@@ -223,7 +223,7 @@ const FuelApp: React.FC = () => {
           <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-secondary'}`}>
             {isSidebarOpen ? <X size={24}/> : <Menu size={24}/>}
           </button>
-          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen && window.innerWidth >= 768 ? 'md:hidden' : 'md:text-secondary text-white'}`}>
+          <h1 className={`text-xl font-black ml-4 ${isSidebarOpen ? 'md:hidden' : ''} md:text-secondary text-white`}>
             FUEL <span className='text-primary'>WATCH</span>
           </h1>
         </div>
