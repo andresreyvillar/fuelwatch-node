@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
 import StationCard from './StationCard';
 
@@ -10,15 +10,7 @@ const FilterForm = ({
       <label className={`block text-[10px] font-black uppercase tracking-[0.2em] mb-3 ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Búsqueda</label>
       <div className='relative'>
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 ${isDark ? 'text-white/40' : 'text-gray-400'}`} size={18} />
-        <input 
-          type='text' 
-          value={search} 
-          onChange={e => setSearch(e.target.value)} 
-          onFocus={() => setIsSearchFocused(true)}
-          onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-          className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} 
-          placeholder='Ciudad o CP...' 
-        />
+        <input type='text' value={search} onChange={e => setSearch(e.target.value)} onFocus={() => setIsSearchFocused(true)} onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} placeholder='Ciudad o CP...' />
         {isSearchFocused && suggestions.length > 0 && (
           <div className={`absolute z-[70] w-full mt-2 border shadow-2xl rounded-2xl overflow-hidden ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
             {suggestions.map((s: string) => (
@@ -85,17 +77,31 @@ const FuelApp: React.FC = () => {
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
     const savedTheme = localStorage.getItem('fuelwatch_theme') as 'light' | 'dark';
     if (savedTheme) { setTheme(savedTheme); if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark'); }
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-          const data = await res.json();
-          const city = data.address.city || data.address.town || data.address.village || 'Madrid';
-          setSearch(city); setDebouncedSearch(city);
-        } catch { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
-      }, () => { setSearch('Madrid'); setDebouncedSearch('Madrid'); });
-    } else { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
+
+    const getInitialLocation = async () => {
+      const fallback = () => { setSearch('Madrid'); setDebouncedSearch('Madrid'); };
+      
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            const city = data.address.city || data.address.town || data.address.village || 'Madrid';
+            setSearch(city); setDebouncedSearch(city);
+          } catch { fallback(); }
+        }, async () => {
+          try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            const city = data.city || 'Madrid';
+            setSearch(city); setDebouncedSearch(city);
+          } catch { fallback(); }
+        });
+      } else { fallback(); }
+    };
+    
+    getInitialLocation();
     if (window.innerWidth >= 1024) setIsSidebarOpen(true);
   }, []);
 
@@ -127,8 +133,6 @@ const FuelApp: React.FC = () => {
 
   const fetchData = async (resetPage = true) => {
     if (!debouncedSearch) return;
-    // Verify if it's a known location name (contained in suggestions or previous data)
-    // For simplicity, we fetch anyway but the 1s delay and suggestions give priority to clicking suggestions
     const currentPage = resetPage ? 1 : page;
     setLoading(true);
     try {
@@ -181,70 +185,32 @@ const FuelApp: React.FC = () => {
     });
   }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters]);
 
-  const filterProps = {
-    search, setSearch, activeFilters, setActiveFilters, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused,
-    onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); }
-  };
+  const filterProps = { search, setSearch, activeFilters, setActiveFilters, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); } };
 
   return (
     <div className='h-screen bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col lg:flex-row transition-colors duration-300 overflow-hidden'>
-      {isSidebarOpen && (
-        <div className='fixed inset-0 z-[100] lg:hidden bg-secondary/20 backdrop-blur-sm' onClick={() => setIsSidebarOpen(false)} />
-      )}
-
+      {isSidebarOpen && <div className='fixed inset-0 z-[100] lg:hidden bg-secondary/20 backdrop-blur-sm' onClick={() => setIsSidebarOpen(false)} />}
       <aside className={`fixed lg:relative z-[110] h-full bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 ${isSidebarOpen ? 'translate-x-0 w-80 p-6' : '-translate-x-full lg:translate-x-0 lg:w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full overflow-hidden'>
-          <div className='mb-10 shrink-0 flex items-center justify-between'>
-            <h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1>
-            <button onClick={() => setIsSidebarOpen(false)} className='lg:hidden text-white/40 hover:text-white'><X size={24}/></button>
-          </div>
+          <div className='mb-10 shrink-0 flex items-center justify-between'><h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1><button onClick={() => setIsSidebarOpen(false)} className='lg:hidden text-white/40 hover:text-white'><X size={24}/></button></div>
           <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'><FilterForm isDark={true} {...filterProps} /></div>
           <div className='mt-6 pt-6 border-t border-white/5 shrink-0'><button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>{theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}</button></div>
         </div>
       </aside>
-
       <div className='flex-1 flex flex-col h-full overflow-hidden'>
-        <header className='bg-secondary lg:bg-white astro-dark:lg:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors z-50'>
-          <button onClick={() => setIsSidebarOpen(true)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'lg:opacity-100' : 'bg-white/10 lg:bg-gray-100 text-white lg:text-secondary astro-dark:lg:text-white'}`}>
-            <Menu size={24}/>
-          </button>
-          <h1 className={`text-xl font-black ml-4 lg:text-secondary text-white astro-dark:md:text-white`}>FUEL <span className='text-primary'>WATCH</span></h1>
-          <div className='flex-1' />
-          <div className='hidden lg:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
+        <header className='bg-secondary lg:bg-white astro-dark:lg:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors z-50 sticky top-0'>
+          <button onClick={() => setIsSidebarOpen(true)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'lg:opacity-100' : 'bg-white/10 lg:bg-gray-100 text-white lg:text-secondary astro-dark:lg:text-white'}`}><Menu size={24}/></button>
+          <h1 className={`text-xl font-black ml-4 lg:text-secondary text-white astro-dark:lg:text-white`}>FUEL <span className='text-primary'>WATCH</span></h1>
+          <div className='flex-1' /><div className='hidden lg:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
         </header>
-
-        <div className='flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8'>
-          <div className='max-w-4xl w-full mx-auto'>
-            {pinnedStations.length > 0 && (
-              <div className='mb-12'>
-                <h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>
-                {pinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}
-              </div>
-            )}
-
-            <div className='flex items-center justify-between mb-6 px-2'>
-              <h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>Estaciones en {debouncedSearch || '...'}</h2>
-              <span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span>
-            </div>
-
-            {filteredResults.length === 0 && !loading && debouncedSearch && (
-              <div className='py-20 text-center animate-cascade'>
-                <div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'>
-                  <Search size={48} className='mx-auto text-gray-200 mb-4' />
-                  <p className='text-secondary astro-dark:text-white font-bold'>No hay resultados para "{search}"</p>
-                  <p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p>
-                </div>
-              </div>
-            )}
-
-            <div className='grid grid-cols-1 gap-2'>
-              {filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}
-            </div>
-
-            {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}
-            {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white astro-dark:bg-white/5 border border-gray-200 astro-dark:border-white/10 text-secondary astro-dark:text-white font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
-          </div>
-        </div>
+        <div className='flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-8'><div className='max-w-4xl w-full mx-auto'>
+          {pinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{pinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}
+          <div className='flex items-center justify-between mb-6 px-2'><h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>Estaciones en {debouncedSearch || '...'}</h2><span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span></div>
+          {filteredResults.length === 0 && !loading && debouncedSearch && (<div className='py-20 text-center animate-cascade'><div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'><Search size={48} className='mx-auto text-gray-200 mb-4' /><p className='text-secondary astro-dark:text-white font-bold'>No hay resultados para "{search}"</p><p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p></div></div>)}
+          <div className='grid grid-cols-1 gap-2'>{filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}</div>
+          {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}
+          {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white astro-dark:bg-white/5 border border-gray-200 astro-dark:border-white/10 text-secondary astro-dark:text-white font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
+        </div></div>
       </div>
     </div>
   );
