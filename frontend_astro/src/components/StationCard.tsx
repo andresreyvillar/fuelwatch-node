@@ -25,8 +25,6 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     );
   }
 
-  const isLargeDisplay = activeFilters.length === 1;
-
   const getPricePercentage = (price: number, statKey: string) => {
     const s = stats?.[statKey];
     if (!s || !s.max || s.max === s.min || !price) return 50;
@@ -51,7 +49,6 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
       }`}
       style={{ animationDelay: `${(index % 20) * 0.05}s` }}
     >
-      {/* Mobile absolute pin button */}
       <button 
         onClick={() => onTogglePin?.(station)}
         className={`absolute top-3 right-3 lg:hidden p-2 rounded-full transition-colors z-10 ${
@@ -61,7 +58,6 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         {isPinned ? <Lock size={16} /> : <LockKeyholeOpen size={16} />}
       </button>
 
-      {/* 1. Station Info Section */}
       <div className='flex items-center space-x-4 lg:w-1/3 min-w-0'>
         <div className={`w-10 h-10 lg:w-12 lg:h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner ${
           station.rotulo.includes('REPSOL') ? 'bg-orange-50 text-orange-500 astro-dark:bg-orange-500/10' :
@@ -85,19 +81,18 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         </div>
       </div>
 
-      {/* 2. Prices Section */}
-      <div className='mt-4 lg:mt-0 flex-1 flex items-center justify-between lg:justify-center gap-x-2 lg:gap-x-8 border-t lg:border-t-0 pt-4 lg:pt-0'>
+      <div className='mt-4 lg:mt-0 flex-1 flex items-center justify-between lg:justify-center gap-x-2 lg:gap-x-8 border-t lg:border-t-0 border-gray-100/30 astro-dark:border-white/5 pt-4 lg:pt-0'>
         {fuels.map((f) => {
           const price = station[f.key];
           if (!price || price === 0) return null;
           const perc = getPricePercentage(price, f.statKey);
           const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
           return (
-            <div key={f.key} className={`flex flex-col items-center lg:items-center min-w-[72px] lg:min-w-[90px] ${isLargeDisplay ? 'scale-110 lg:scale-110' : ''}`}>
+            <div key={f.key} className='flex flex-col items-center flex-1 lg:flex-none min-w-[72px] lg:min-w-[90px]'>
               <span className='text-[9px] lg:text-[10px] font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1'>{f.label}</span>
               <div className='flex flex-col items-center w-fit'>
                 <div className='flex items-center'>
-                  <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[18px] lg:text-2xl' : 'text-[15px] lg:text-xl'}`}>
+                  <span className='font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap text-[16px] lg:text-xl'>
                     {price.toFixed(3)}€
                   </span>
                   {renderTrend(price, f.historyKey)}
@@ -111,14 +106,13 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
         })}
       </div>
 
-      {/* 3. Favorite Button Section (Desktop) */}
       <div className='hidden lg:flex lg:w-20 justify-end flex-shrink-0'>
         <button 
           onClick={() => onTogglePin?.(station)}
           className={`p-3 rounded-2xl transition-all ${
             isPinned 
               ? 'text-primary bg-primary/10 ring-1 ring-primary/20' 
-              : 'text-gray-300 hover:text-secondary hover:bg-gray-50 astro-dark:text-white/20 astro-dark:hover:bg-white/5'
+              : 'text-gray-300 hover:text-secondary hover:bg-gray-50 astro-dark:text-white/20 astro-dark:hover:text-white astro-dark:hover:bg-white/5'
           }`}
         >
           {isPinned ? <Lock size={20} /> : <LockKeyholeOpen size={20} />}
