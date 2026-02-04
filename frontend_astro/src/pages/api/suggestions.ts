@@ -7,14 +7,17 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
-    let orConditions = [`localidad.ilike.%${query}%`];
+    // Escape parentheses for Supabase .or() filter
+    const safeQuery = query.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+    let orConditions = [`localidad.ilike.%${safeQuery}%` ];
 
     const upperQuery = query.toUpperCase();
     for (const art of articles) {
       if (upperQuery.startsWith(art)) {
         const mainName = query.slice(art.length).trim();
-        // If we have 'A COR', search for things like 'COR%(A)'
-        orConditions.push(`localidad.ilike.%${mainName}%(${art.trim()})%`);
+        // Format for DB: "NAME (ART)". Escape parentheses here too.
+        const escapedArt = art.trim().replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+        orConditions.push(`localidad.ilike.%${mainName}%${escapedArt}%`);
       }
     }
 
@@ -22,7 +25,7 @@ export const GET: APIRoute = async ({ url }) => {
       .from('servicestations')
       .select('localidad')
       .or(orConditions.join(','))
-      .limit(50);
+      .limit(100);
 
     if (error) throw error;
 
