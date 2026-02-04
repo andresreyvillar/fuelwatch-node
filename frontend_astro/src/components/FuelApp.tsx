@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
+import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, ArrowDownWideEqual } from 'lucide-react';
 import StationCard from './StationCard';
 
 const FilterForm = ({
-  isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused
+  isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy
 }: any) => (
   <div className='space-y-6'>
     <div>
@@ -14,7 +14,7 @@ const FilterForm = ({
           type='text' 
           value={search} 
           onChange={e => setSearch(e.target.value)} 
-          onFocus={() => setIsSearchFocused(true)}
+          onFocus={(e) => { setIsSearchFocused(true); setSearch(''); }}
           onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
           className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} 
           placeholder='Ciudad o CP...' 
@@ -28,12 +28,29 @@ const FilterForm = ({
         )}
       </div>
     </div>
+
     <div className='space-y-6'>
+      <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Ordenar por</label>
+      <div className='relative'>
+        <select 
+          value={sortBy} 
+          onChange={e => setSortBy(e.target.value)}
+          className={`w-full appearance-none border rounded-2xl px-4 py-3 font-bold transition-all outline-none focus:ring-2 focus:ring-primary ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-gray-50 border-gray-100 text-secondary'}`}
+        >
+          <option value='price_asc'>Precio: más barato</option>
+          <option value='price_desc'>Precio: más caro</option>
+          <option value='brand_asc'>Marca: A-Z</option>
+          <option value='cp_asc'>Código Postal</option>
+        </select>
+        <ChevronDown size={18} className='absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none opacity-40' />
+      </div>
+
       <label className={`block text-[10px] font-black uppercase tracking-[0.2em] ml-1 ${isDark ? 'text-white/40' : 'text-gray-400'}`}>Filtros</label>
       <div className={`flex p-2 rounded-2xl border gap-2 ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-100 border-gray-100'}`}>
         <button onClick={() => onToggleFilter('diesel')} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('diesel') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>DIÉSEL</button>
         <button onClick={() => onToggleFilter('gasolina')} className={`flex-1 py-3.5 rounded-xl font-bold transition-all ${activeFilters.includes('gasolina') ? 'bg-primary text-white shadow-md' : isDark ? 'text-white/40' : 'text-gray-400'}`}>GASOLINA</button>
       </div>
+
       <div className='relative'>
         <button onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)} className={`w-full flex items-center justify-between border rounded-2xl px-4 py-3 font-bold transition-all ${isDark ? 'bg-white/5 border-white/5 text-white hover:bg-white/10' : 'bg-gray-50 border-gray-100 text-secondary hover:bg-gray-100'}`}>
           <span className='truncate'>{selectedBrands.length ? `${selectedBrands.length} Marcas` : 'Todas las marcas'}</span>
@@ -51,6 +68,7 @@ const FilterForm = ({
           </div>
         )}
       </div>
+
       <div>
         <div className='flex justify-between text-[10px] font-black uppercase mb-3 ml-1'><span className={isDark ? 'text-white/40' : 'text-gray-400'}>Precio Máx</span><span className='text-primary'>{tempPriceRange.max.toFixed(2)}€</span></div>
         <input type='range' min='1' max='2.5' step='0.01' value={tempPriceRange.max} onChange={e => setPriceTempRange((p: any) => ({...p, max: parseFloat(e.target.value)}))} className='w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary' />
@@ -66,6 +84,7 @@ const FuelApp: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [activeFilters, setActiveFilters] = useState<string[]>(['diesel', 'gasolina']);
+  const [sortBy, setSortBy] = useState('price_asc');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -83,19 +102,40 @@ const FuelApp: React.FC = () => {
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
+
+    // Load persistent filters
+    const savedSearch = localStorage.getItem('fuelwatch_last_search');
+    const savedFilters = localStorage.getItem('fuelwatch_active_filters');
+    const savedBrands = localStorage.getItem('fuelwatch_selected_brands');
+    const savedSort = localStorage.getItem('fuelwatch_sort_by');
     const savedTheme = localStorage.getItem('fuelwatch_theme') as 'light' | 'dark';
+
+    if (savedSearch) { setSearch(savedSearch); setDebouncedSearch(savedSearch); }
+    if (savedFilters) setActiveFilters(JSON.parse(savedFilters));
+    if (savedBrands) setSelectedBrands(JSON.parse(savedBrands));
+    if (savedSort) setSortBy(savedSort);
     if (savedTheme) { setTheme(savedTheme); if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark'); }
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
-          const data = await res.json();
-          const city = data.address.city || data.address.town || data.address.village || 'Madrid';
-          setSearch(city); setDebouncedSearch(city);
-        } catch { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
-      }, () => { setSearch('Madrid'); setDebouncedSearch('Madrid'); });
-    } else { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
+
+    if (!savedSearch) {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          try {
+            const { latitude, longitude } = pos.coords;
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+            const data = await res.json();
+            const city = data.address.city || data.address.town || data.address.village || 'Madrid';
+            setSearch(city); setDebouncedSearch(city);
+          } catch { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
+        }, async () => {
+          try {
+            const res = await fetch('https://ipapi.co/json/');
+            const data = await res.json();
+            const city = data.city || 'Madrid';
+            setSearch(city); setDebouncedSearch(city);
+          } catch { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
+        });
+      } else { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
+    }
     if (window.innerWidth >= 1024) setIsSidebarOpen(true);
   }, []);
 
@@ -117,7 +157,12 @@ const FuelApp: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
+  // Persistence Effects
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations)); }, [pinnedStations, isBrowser]);
+  useEffect(() => { if (isBrowser && debouncedSearch) localStorage.setItem('fuelwatch_last_search', debouncedSearch); }, [debouncedSearch, isBrowser]);
+  useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_active_filters', JSON.stringify(activeFilters)); }, [activeFilters, isBrowser]);
+  useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_selected_brands', JSON.stringify(selectedBrands)); }, [selectedBrands, isBrowser]);
+  useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_sort_by', sortBy); }, [sortBy, isBrowser]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -127,9 +172,7 @@ const FuelApp: React.FC = () => {
 
   const onToggleFilter = (f: string) => {
     setActiveFilters(prev => {
-      if (prev.includes(f)) {
-        return prev.length > 1 ? prev.filter(x => x !== f) : prev;
-      }
+      if (prev.includes(f)) return prev.length > 1 ? prev.filter(x => x !== f) : prev;
       return [...prev, f];
     });
   };
@@ -177,7 +220,7 @@ const FuelApp: React.FC = () => {
 
   const filteredResults = useMemo(() => {
     const pinnedIds = new Set(pinnedStations.map(s => s.id_ss));
-    return stations.filter(s => !pinnedIds.has(s.id_ss)).filter(s => {
+    let results = stations.filter(s => !pinnedIds.has(s.id_ss)).filter(s => {
       if (selectedBrands.length > 0 && !selectedBrands.includes(s.rotulo)) return false;
       const prices = [];
       if (activeFilters.includes('diesel')) prices.push(s.precio_diesel);
@@ -186,12 +229,27 @@ const FuelApp: React.FC = () => {
       if (validPrices.length === 0) return true;
       return Math.min(...validPrices) <= tempPriceRange.max;
     });
-  }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters]);
 
-  const filterProps = {
-    search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused,
-    onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); }
-  };
+    // Apply Sorting
+    return results.sort((a, b) => {
+      if (sortBy === 'brand_asc') return a.rotulo.localeCompare(b.rotulo);
+      if (sortBy === 'cp_asc') return a.cp.localeCompare(b.cp);
+      
+      // Price sorting (uses the lowest available price among active filters)
+      const getMinPrice = (s: any) => {
+        const ps = [];
+        if (activeFilters.includes('diesel')) ps.push(s.precio_diesel || 999);
+        if (activeFilters.includes('gasolina')) ps.push(s.precio_gasolina_95 || 999);
+        return Math.min(...ps);
+      };
+      
+      const priceA = getMinPrice(a);
+      const priceB = getMinPrice(b);
+      return sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
+    });
+  }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters, sortBy]);
+
+  const filterProps = { search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSelectSuggestion: (s: string) => { setSearch(s); setDebouncedSearch(s); setSuggestions([]); setIsSearchFocused(false); } };
 
   return (
     <div className='h-screen w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col lg:flex-row transition-colors duration-300 overflow-hidden'>
