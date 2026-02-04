@@ -3,8 +3,8 @@ import { updateDataFromMinistry } from '../../lib/fuel';
 
 export const GET: APIRoute = async () => {
   try {
-    // Note: This endpoint is only called from GitHub Actions workflow
-    // Authentication is handled by the workflow itself (it's in a private repo)
+    // Endpoint for syncing fuel prices from Ministry API to Supabase
+    // Called hourly by GitHub Actions workflow
     const result = await updateDataFromMinistry();
     return new Response(JSON.stringify(result), {
       status: 200,
