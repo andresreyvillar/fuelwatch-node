@@ -97,6 +97,8 @@ const FuelApp: React.FC = () => {
   const [isBrowser, setIsBrowser] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     setIsBrowser(true);
@@ -136,6 +138,28 @@ const FuelApp: React.FC = () => {
       } else { setSearch('Madrid'); setDebouncedSearch('Madrid'); }
     }
     if (window.innerWidth >= 1024) setIsSidebarOpen(true);
+
+    // Touch Gestures for Sidebar
+    const handleTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (touchStartX.current === null) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const diff = touchEndX - touchStartX.current;
+      
+      // Swipe right from near left edge to open
+      if (diff > 100 && touchStartX.current < 50) setIsSidebarOpen(true);
+      // Swipe left anywhere to close
+      if (diff < -100) setIsSidebarOpen(false);
+      
+      touchStartX.current = null;
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
   }, []);
 
   useEffect(() => {
