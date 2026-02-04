@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, ArrowDownWideEqual } from 'lucide-react';
+import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
 import StationCard from './StationCard';
 
 const FilterForm = ({
@@ -103,7 +103,6 @@ const FuelApp: React.FC = () => {
     const savedPins = localStorage.getItem('fuelwatch_pins');
     if (savedPins) setPinnedStations(JSON.parse(savedPins));
 
-    // Load persistent filters
     const savedSearch = localStorage.getItem('fuelwatch_last_search');
     const savedFilters = localStorage.getItem('fuelwatch_active_filters');
     const savedBrands = localStorage.getItem('fuelwatch_selected_brands');
@@ -157,7 +156,6 @@ const FuelApp: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // Persistence Effects
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations)); }, [pinnedStations, isBrowser]);
   useEffect(() => { if (isBrowser && debouncedSearch) localStorage.setItem('fuelwatch_last_search', debouncedSearch); }, [debouncedSearch, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_active_filters', JSON.stringify(activeFilters)); }, [activeFilters, isBrowser]);
@@ -230,19 +228,15 @@ const FuelApp: React.FC = () => {
       return Math.min(...validPrices) <= tempPriceRange.max;
     });
 
-    // Apply Sorting
     return results.sort((a, b) => {
       if (sortBy === 'brand_asc') return a.rotulo.localeCompare(b.rotulo);
       if (sortBy === 'cp_asc') return a.cp.localeCompare(b.cp);
-      
-      // Price sorting (uses the lowest available price among active filters)
       const getMinPrice = (s: any) => {
         const ps = [];
         if (activeFilters.includes('diesel')) ps.push(s.precio_diesel || 999);
         if (activeFilters.includes('gasolina')) ps.push(s.precio_gasolina_95 || 999);
         return Math.min(...ps);
       };
-      
       const priceA = getMinPrice(a);
       const priceB = getMinPrice(b);
       return sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
