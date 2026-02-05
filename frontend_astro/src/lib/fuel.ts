@@ -86,6 +86,18 @@ async function attachTrends(data: any[]) {
   return data.map(s => ({ ...s, trend: trends[s.id_ss] || null }));
 }
 
+export async function getStationHistory(id: number) {
+  const client = checkSupabase();
+  const { data, error } = await client
+    .from('price_history')
+    .select('fecha, diesel, gas95, diesel_extra, gas98')
+    .eq('station_id', id)
+    .order('fecha', { ascending: true })
+    .limit(30);
+  if (error) throw error;
+  return data;
+}
+
 export async function getStationsByIds(ids: number[]) {
   const client = checkSupabase();
   const { data, error } = await client.from('servicestations').select('*').in('id_ss', ids);
