@@ -104,7 +104,11 @@ const FuelApp: React.FC = () => {
   useEffect(() => {
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
-    if (savedPins) setPinnedStations(JSON.parse(savedPins));
+    let currentPins: any[] = [];
+    if (savedPins) {
+      currentPins = JSON.parse(savedPins);
+      setPinnedStations(currentPins);
+    }
 
     const savedSearch = localStorage.getItem('fuelwatch_last_search');
     const savedFilters = localStorage.getItem('fuelwatch_active_filters');
@@ -117,6 +121,26 @@ const FuelApp: React.FC = () => {
     if (savedBrands) setSelectedBrands(JSON.parse(savedBrands));
     if (savedSort) setSortBy(savedSort);
     if (savedTheme) { setTheme(savedTheme); if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark'); }
+
+    // Update Pinned Stations asynchronously
+    if (currentPins.length > 0) {
+      const updatePins = async () => {
+        try {
+          const ids = currentPins.map(s => s.id_ss).join(',');
+          const res = await fetch(`/api/search?ids=${ids}`);
+          const result = await res.json();
+          if (result.data && result.data.length > 0) {
+            // Map results back to maintain pinned order if possible
+            const updatedPins = currentPins.map(old => {
+              const fresh = result.data.find((f: any) => f.id_ss === old.id_ss);
+              return fresh ? { ...fresh, trend: fresh.trend || old.trend } : old;
+            });
+            setPinnedStations(updatedPins);
+          }
+        } catch (e) { console.error('Failed to update pins', e); }
+      };
+      updatePins();
+    }
 
     if (!savedSearch) {
       if ('geolocation' in navigator) {
