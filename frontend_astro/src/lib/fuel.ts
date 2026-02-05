@@ -69,42 +69,39 @@ export async function updateDataFromMinistry() {
   return { success: true, count: stations.length };
 }
 
-export async function searchStations(query: string, page: number = 1, limit: number = 20) {
-  const skip = (page - 1) * limit;
+async function attachTrends(data: any[]) {
+  if (!data || data.length === 0) return data;
   const client = checkSupabase();
-  const orConditions = getSearchConditions(query);
-  
-  const { data, count, error } = await client
-    .from('servicestations')
-    .select('*', { count: 'exact' })
-    .or(orConditions)
-    .order('cp', { ascending: true })
-    .range(skip, skip + limit - 1);
-
-  if (error) throw error;
-
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split('T')[0];
-
   const stationIds = data.map(s => s.id_ss);
   const { data: historyData } = await client
     .from('price_history')
     .select('station_id, diesel, diesel_extra, gas95, gas98')
     .in('station_id', stationIds)
     .eq('fecha', yesterdayStr);
-
   const trends: Record<number, any> = {};
-  historyData?.forEach(h => {
-    trends[h.station_id] = h;
-  });
+  historyData?.forEach(h => { trends[h.station_id] = h; });
+  return data.map(s => ({ ...s, trend: trends[s.id_ss] || null }));
+}
 
-  const dataWithTrends = data.map(s => ({
-    ...s,
-    trend: trends[s.id_ss] || null
-  }));
+export async function getStationsByIds(ids: number[]) {
+  const client = checkSupabase();
+  const { data, error } = await client.from('servicestations').select('*').in('id_ss', ids);
+  if (error) throw error;
+  const withTrends = await attachTrends(data);
+  return { data: withTrends };
+}
 
-  return { data: dataWithTrends, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
+export async function searchStations(query: string, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit;
+  const client = checkSupabase();
+  const orConditions = getSearchConditions(query);
+  const { data, count, error } = await client.from('servicestations').select('*', { count: 'exact' }).or(orConditions).order('cp', { ascending: true }).range(skip, skip + limit - 1);
+  if (error) throw error;
+  const withTrends = await attachTrends(data);
+  return { data: withTrends, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
 }
 
 export async function getStats(location: string) {
@@ -116,10 +113,7 @@ export async function getStats(location: string) {
   const dieselArr = data.map(s => s.precio_diesel).filter(p => p > 0);
   const gas95Arr = data.map(s => s.precio_gasolina_95).filter(p => p > 0);
   const getAvg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-  return {
-    diesel: { avg: getAvg(dieselArr), min: Math.min(...dieselArr) || 0, max: Math.max(...dieselArr) || 0 },
-    gas95: { avg: getAvg(gas95Arr), min: Math.min(...gas95Arr) || 0, max: Math.max(...gas95Arr) || 0 }
-  };
+  return { diesel: { avg: getAvg(dieselArr), min: Math.min(...dieselArr) || 0, max: Math.max(...dieselArr) || 0 }, gas95: { avg: getAvg(gas95Arr), min: Math.min(...gas95Arr) || 0, max: Math.max(...gas95Arr) || 0 } };
 }
 
 function getSearchConditions(query: string): string {
@@ -129,10 +123,7 @@ function getSearchConditions(query: string): string {
   for (const art of articles) {
     if (coreName.toUpperCase().startsWith(art)) coreName = coreName.slice(art.length).trim();
   }
-  let conditions = [
-    `localidad.ilike.%${query}%`,
-    `cp.ilike.%${query}%`
-  ];
+  let conditions = [`localidad.ilike.%${query}%` , `cp.ilike.%${query}%` ];
   if (coreName && coreName !== query) conditions.push(`localidad.ilike.%${coreName}%`);
   for (const art of articles) {
     if (upperQuery.startsWith(art)) {
