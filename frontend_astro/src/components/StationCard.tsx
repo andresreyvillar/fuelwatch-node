@@ -43,8 +43,8 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
     const oldPrice = station.trend?.[historyKey];
     if (!oldPrice || oldPrice === 0) return null;
     if (currentPrice > oldPrice) return <TrendingUp size={isLargeDisplay ? 14 : 12} className='text-red-500 ml-1' />;
-    if (currentPrice < oldPrice) return <TrendingDown size={12} className='text-green-500 ml-1' />;
-    return <Minus size={12} className='text-gray-300 ml-1' />;
+    if (currentPrice < oldPrice) return <TrendingDown size={isLargeDisplay ? 14 : 12} className='text-green-500 ml-1' />;
+    return <Minus size={isLargeDisplay ? 14 : 12} className='text-gray-300 ml-1' />;
   };
 
   const toggleHistory = async () => {
@@ -102,7 +102,6 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           </div>
         </div>
 
-        {/* Fixed: justify-center on mobile too */}
         <div className='mt-4 desk:mt-0 flex-1 flex items-center justify-center gap-x-4 desk:gap-x-4 border-t desk:border-t-0 border-gray-100/20 astro-dark:border-white/5 pt-4 desk:pt-0 min-w-0'>
           {fuels.map((f) => {
             const price = station[f.key];
@@ -110,11 +109,11 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
             const perc = getPricePercentage(price, f.statKey);
             const barColor = perc < 30 ? 'bg-green-500' : perc < 70 ? 'bg-primary' : 'bg-red-500';
             return (
-              <div key={f.key} className={`flex flex-col items-center flex-none min-w-[65px] desk:min-w-[80px] flex-shrink-0 ${isLargeDisplay ? 'scale-110' : ''}`}>
-                <span className={`font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1 text-[9px] desk:text-[10px]`}>{f.label}</span>
+              <div key={f.key} className={`flex flex-col items-center flex-none flex-shrink-0 ${isLargeDisplay ? 'min-w-[100px] desk:min-w-[120px]' : 'min-w-[65px] desk:min-w-[80px]'}`}>
+                <span className={`font-bold text-gray-400 astro-dark:text-white/20 uppercase tracking-tighter mb-1 ${isLargeDisplay ? 'text-[11px] desk:text-xs' : 'text-[9px] desk:text-[10px]'}`}>{f.label}</span>
                 <div className='flex flex-col items-center w-fit'>
                   <div className='flex items-center'>
-                    <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[18px] desk:text-2xl' : 'text-[14px] desk:text-lg'}`}>
+                    <span className={`font-black text-secondary astro-dark:text-white leading-none whitespace-nowrap ${isLargeDisplay ? 'text-[22px] desk:text-3xl' : 'text-[16px] desk:text-xl'}`}>
                       {price.toFixed(3)}€
                     </span>
                     {renderTrend(price, f.historyKey)}
