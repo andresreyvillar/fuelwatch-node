@@ -14,6 +14,9 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters }) => {
     displayDate: new Date(d.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
   }));
 
+  const showDiesel = activeFilters.includes('diesel');
+  const showGasolina = activeFilters.includes('gasolina');
+
   return (
     <div className='w-full h-64 mt-4 bg-gray-50/50 astro-dark:bg-white/5 rounded-2xl p-2 desk:p-4'>
       <ResponsiveContainer width='100%' height='100%'>
@@ -48,46 +51,54 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters }) => {
             }}
           />
           {/* Diesel - Solid Blue */}
-          <Line 
-            type='monotone' 
-            dataKey='diesel' 
-            name='Diésel' 
-            stroke='#3b82f6' 
-            strokeWidth={3} 
-            dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }} 
-            activeDot={{ r: 5 }}
-            connectNulls
-          />
+          {showDiesel && (
+            <Line 
+              type='monotone' 
+              dataKey='diesel' 
+              name='Diésel' 
+              stroke='#3b82f6' 
+              strokeWidth={3} 
+              dot={{ r: 3, fill: '#3b82f6', strokeWidth: 0 }} 
+              activeDot={{ r: 5 }}
+              connectNulls
+            />
+          )}
           {/* Diesel Extra - Solid Dark Blue */}
-          <Line 
-            type='monotone' 
-            dataKey='diesel_extra' 
-            name='Diésel+' 
-            stroke='#1d4ed8' 
-            strokeWidth={2} 
-            dot={{ r: 3, fill: '#1d4ed8', strokeWidth: 0 }}
-            connectNulls
-          />
+          {showDiesel && (
+            <Line 
+              type='monotone' 
+              dataKey='diesel_extra' 
+              name='Diésel+' 
+              stroke='#1d4ed8' 
+              strokeWidth={2} 
+              dot={{ r: 3, fill: '#1d4ed8', strokeWidth: 0 }}
+              connectNulls
+            />
+          )}
           {/* Gasolina 95 - Solid Amber */}
-          <Line 
-            type='monotone' 
-            dataKey='gas95' 
-            name='95' 
-            stroke='#f59e0b' 
-            strokeWidth={3} 
-            dot={{ r: 3, fill: '#f59e0b', strokeWidth: 0 }}
-            connectNulls
-          />
+          {showGasolina && (
+            <Line 
+              type='monotone' 
+              dataKey='gas95' 
+              name='95' 
+              stroke='#f59e0b' 
+              strokeWidth={3} 
+              dot={{ r: 3, fill: '#f59e0b', strokeWidth: 0 }}
+              connectNulls
+            />
+          )}
           {/* Gasolina 98 - Solid Brown */}
-          <Line 
-            type='monotone' 
-            dataKey='gas98' 
-            name='98' 
-            stroke='#b45309' 
-            strokeWidth={2} 
-            dot={{ r: 3, fill: '#b45309', strokeWidth: 0 }}
-            connectNulls
-          />
+          {showGasolina && (
+            <Line 
+              type='monotone' 
+              dataKey='gas98' 
+              name='98' 
+              stroke='#b45309' 
+              strokeWidth={2} 
+              dot={{ r: 3, fill: '#b45309', strokeWidth: 0 }}
+              connectNulls
+            />
+          )}
         </LineChart>
       </ResponsiveContainer>
     </div>
