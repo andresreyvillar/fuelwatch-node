@@ -259,6 +259,21 @@ const FuelApp: React.FC = () => {
     });
   };
 
+  const sortedPinnedStations = useMemo(() => {
+    return [...pinnedStations].sort((a, b) => {
+      const getPrice = (s: any) => {
+        const ps = [];
+        if (activeFilters.includes('diesel')) ps.push(s.precio_diesel);
+        if (activeFilters.includes('gasolina')) ps.push(s.precio_gasolina_95);
+        const valid = ps.filter(p => p && p > 0);
+        return valid.length ? Math.min(...valid) : -Infinity;
+      };
+      const priceA = getPrice(a);
+      const priceB = getPrice(b);
+      return priceB - priceA;
+    });
+  }, [pinnedStations, activeFilters]);
+
   const availableBrands = useMemo(() => {
     const brands = new Set([...stations, ...pinnedStations].map(s => s.rotulo));
     return Array.from(brands).sort();
@@ -310,7 +325,7 @@ const FuelApp: React.FC = () => {
           <div className='flex-1' /><div className='hidden desk:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
         </header>
         <div className='flex-1 overflow-y-auto custom-scrollbar p-4 desk:p-8'><div className='max-w-4xl w-full mx-auto'>
-          {pinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{pinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}
+          {sortedPinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{sortedPinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}
           <div className='flex items-center justify-between mb-6 px-2'><h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>{selectedBrands.length > 0 ? `Estaciones de ${selectedBrands.join(', ')} en` : 'Estaciones en'} {debouncedSearch || '...'}</h2><span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span></div>
           {filteredResults.length === 0 && !loading && debouncedSearch && (<div className='py-20 text-center animate-cascade'><div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'><Search size={48} className='mx-auto text-gray-200 mb-4' /><p className='text-secondary astro-dark:text-white font-black font-bold'>No hay resultados para "{debouncedSearch}"</p><p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p></div></div>)}
           <div className='grid grid-cols-1 gap-2'>{filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}</div>
