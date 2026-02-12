@@ -4,12 +4,33 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface PriceChartProps {
   data: any[];
   activeFilters: string[];
+  currentPrices?: any;
 }
 
-const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters }) => {
+const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPrices }) => {
   if (!data || data.length === 0) return <div className='py-10 text-center text-gray-400 text-sm'>No hay datos históricos suficientes aún.</div>;
 
-  const formattedData = data.map(d => ({
+  let chartData = [...data];
+
+  if (currentPrices) {
+    const today = new Date().toISOString().split('T')[0];
+    const todayData = {
+      fecha: today,
+      diesel: currentPrices.precio_diesel,
+      diesel_extra: currentPrices.precio_diesel_extra,
+      gas95: currentPrices.precio_gasolina_95,
+      gas98: currentPrices.precio_gasolina_98
+    };
+
+    const lastItem = chartData[chartData.length - 1];
+    if (lastItem && lastItem.fecha === today) {
+      chartData[chartData.length - 1] = { ...lastItem, ...todayData };
+    } else {
+      chartData.push(todayData);
+    }
+  }
+
+  const formattedData = chartData.map(d => ({
     ...d,
     displayDate: new Date(d.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
   }));

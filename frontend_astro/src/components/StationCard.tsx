@@ -153,7 +153,7 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           {loadingHistory ? (
             <div className='py-10 flex justify-center'><div className='animate-spin rounded-full h-6 w-8 border-b-2 border-primary'></div></div>
           ) : (
-            <PriceChart data={historyData} activeFilters={activeFilters} />
+            <PriceChart data={historyData} activeFilters={activeFilters} currentPrices={station} />
           )}
         </div>
       )}

@@ -104,10 +104,38 @@ const FuelApp: React.FC = () => {
   useEffect(() => {
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
-    let currentPins: any[] = [];
+    let pinIds: number[] = [];
+
     if (savedPins) {
-      currentPins = JSON.parse(savedPins);
-      setPinnedStations(currentPins);
+      try {
+        const parsed = JSON.parse(savedPins);
+        if (Array.isArray(parsed)) {
+          pinIds = parsed.map((p: any) => (typeof p === 'object' && p !== null && 'id_ss' in p) ? p.id_ss : p);
+        }
+      } catch (e) {
+        console.error('Error parsing pins:', e);
+      }
+    }
+
+    // Always fetch fresh data for pins on load if there are IDs
+    if (pinIds.length > 0) {
+      const fetchFreshPins = async () => {
+        try {
+          const uniqueIds = [...new Set(pinIds)].filter(id => !isNaN(Number(id)));
+          if (uniqueIds.length === 0) return;
+
+          const res = await fetch(`/api/search?ids=${uniqueIds.join(',')}&t=${Date.now()}`, { cache: 'no-store' });
+          const result = await res.json();
+          if (result.data) {
+            setPinnedStations(result.data);
+          }
+        } catch (e) {
+          console.error('Failed to fetch fresh pins:', e);
+        }
+      };
+      fetchFreshPins();
+    } else {
+        setPinnedStations([]);
     }
 
     const savedSearch = localStorage.getItem('fuelwatch_last_search');
@@ -121,26 +149,6 @@ const FuelApp: React.FC = () => {
     if (savedBrands) setSelectedBrands(JSON.parse(savedBrands));
     if (savedSort) setSortBy(savedSort);
     if (savedTheme) { setTheme(savedTheme); if (savedTheme === 'dark') document.documentElement.classList.add('astro-dark'); }
-
-    // Update Pinned Stations asynchronously
-    if (currentPins.length > 0) {
-      const updatePins = async () => {
-        try {
-          const ids = currentPins.map(s => s.id_ss).join(',');
-          const res = await fetch(`/api/search?ids=${ids}`);
-          const result = await res.json();
-          if (result.data && result.data.length > 0) {
-            // Map results back to maintain pinned order if possible
-            const updatedPins = currentPins.map(old => {
-              const fresh = result.data.find((f: any) => f.id_ss === old.id_ss);
-              return fresh ? { ...fresh, trend: fresh.trend || old.trend } : old;
-            });
-            setPinnedStations(updatedPins);
-          }
-        } catch (e) { console.error('Failed to update pins', e); }
-      };
-      updatePins();
-    }
 
     if (!savedSearch) {
       if ('geolocation' in navigator) {
@@ -199,7 +207,14 @@ const FuelApp: React.FC = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_pins', JSON.stringify(pinnedStations)); }, [pinnedStations, isBrowser]);
+  // Save only IDs to localStorage
+  useEffect(() => { 
+      if (isBrowser) {
+          const idsToSave = pinnedStations.map(s => s.id_ss);
+          localStorage.setItem('fuelwatch_pins', JSON.stringify(idsToSave)); 
+      }
+  }, [pinnedStations, isBrowser]);
+
   useEffect(() => { if (isBrowser && debouncedSearch) localStorage.setItem('fuelwatch_last_search', debouncedSearch); }, [debouncedSearch, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_active_filters', JSON.stringify(activeFilters)); }, [activeFilters, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_selected_brands', JSON.stringify(selectedBrands)); }, [selectedBrands, isBrowser]);
