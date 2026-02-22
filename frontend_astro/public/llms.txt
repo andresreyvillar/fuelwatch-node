@@ -1,0 +1,55 @@
+# Fuel Watch
+
+> Comparador de precios de gasolina y diésel en tiempo real para todas las gasolineras de España.
+
+## Qué es Fuel Watch
+
+Fuel Watch es una aplicación web gratuita que permite comparar precios de combustible
+(diésel, diésel extra, gasolina 95, gasolina 98) en más de 12.000 gasolineras de España.
+Los precios se actualizan cada hora desde la API oficial del Ministerio de Consumo del Gobierno de España.
+
+## Funcionalidades
+
+- Búsqueda de gasolineras por ciudad o código postal
+- Filtros por tipo de combustible (diésel, gasolina) y por marca
+- Ordenación por precio (más barato primero), marca o código postal
+- Barra visual que indica si el precio es barato, medio o caro respecto a la zona
+- Flechas de tendencia que muestran si el precio ha subido o bajado en los últimos 3 días
+- Gráfico de evolución de precios de los últimos 30 días
+- Hasta 5 gasolineras favoritas guardadas en el navegador
+- Filtro por rango de precio máximo
+- Modo oscuro
+- Diseño responsive (móvil y escritorio)
+
+## Datos
+
+- Fuente: API REST oficial del Ministerio para la Transición Ecológica (sedeaplicaciones.minetur.gob.es)
+- Frecuencia de actualización: cada hora
+- Cobertura: todas las estaciones de servicio terrestres de España (~12.000)
+- Combustibles disponibles: Gasóleo A, Gasóleo Premium, Gasolina 95 E5, Gasolina 98 E5
+- Histórico de precios: últimos 30 días por estación
+
+## Preguntas frecuentes
+
+### ¿Cómo encontrar la gasolinera más barata?
+Escribe tu ciudad o código postal en el buscador. Fuel Watch ordena los resultados por precio, mostrando la gasolinera más barata primero.
+
+### ¿De dónde vienen los datos?
+De la API oficial del Ministerio de Consumo del Gobierno de España. Es la misma fuente de datos que utilizan las aplicaciones oficiales.
+
+### ¿Qué significan las flechas de tendencia?
+Flecha roja hacia arriba = el precio ha subido en los últimos 3 días. Flecha verde hacia abajo = ha bajado. Raya gris = se mantiene estable.
+
+### ¿Cuántas gasolineras cubre?
+Más de 12.000 estaciones de servicio en toda España, incluyendo todas las marcas: Repsol, Cepsa, BP, Ballenoil, Alcampo, Bonárea, Plenoil y muchas más.
+
+## API pública
+
+- Buscar estaciones: https://fuelwatch.es/api/search?target=Madrid
+- Historial de precios: https://fuelwatch.es/api/history?id={station_id}
+- Estadísticas de zona: https://fuelwatch.es/api/stats?location=Madrid
+- Sugerencias de ciudades: https://fuelwatch.es/api/suggestions?q=Mad
+
+## Enlaces
+
+- [Aplicación web](https://fuelwatch.es)

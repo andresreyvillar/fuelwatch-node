@@ -1,10 +1,149 @@
 ---
+export const prerender = true;
+
 import Layout from '../layouts/Layout.astro';
 import FuelApp from '../components/FuelApp';
 ---
 
-<Layout title="Fuel Watch - Compara precios de gasolina">
+<Layout title="Precio Gasolina y Diésel Hoy en España — Fuel Watch"
+        description="Compara precios de gasolina y diésel en tiempo real en más de 12.000 gasolineras de España. Encuentra la gasolinera más barata cerca de ti. Datos actualizados cada hora desde el Ministerio de Consumo.">
 	<main>
+		<article class="seo-content" aria-label="Información sobre Fuel Watch">
+			<h1>Precio de gasolina y diésel hoy en España</h1>
+			<p>
+				Compara precios de combustible en más de 12.000 gasolineras de toda España.
+				Busca por ciudad o código postal y encuentra la <strong>gasolinera más barata</strong> cerca de ti.
+				Datos actualizados cada hora desde la API oficial del <strong>Ministerio de Consumo</strong>.
+			</p>
+			<p>
+				Consulta precios de <strong>Gasóleo A (diésel)</strong>, <strong>Gasóleo Premium</strong>,
+				<strong>Gasolina 95 E5</strong> y <strong>Gasolina 98 E5</strong>.
+				Visualiza la evolución de precios con gráficos de los últimos 30 días y
+				flechas de tendencia que indican si el precio está subiendo o bajando.
+			</p>
+		</article>
+
 		<FuelApp client:load />
+
+		<section class="seo-faq" aria-label="Preguntas frecuentes">
+			<h2>Preguntas frecuentes sobre precios de combustible en España</h2>
+
+			<details>
+				<summary>¿Cómo encontrar la gasolinera más barata cerca de mí?</summary>
+				<p>Escribe tu ciudad o código postal en el buscador de Fuel Watch. La aplicación mostrará todas las gasolineras de tu zona ordenadas por precio, del más barato al más caro. Puedes filtrar por tipo de combustible (diésel o gasolina) y por marca.</p>
+			</details>
+
+			<details>
+				<summary>¿Con qué frecuencia se actualizan los precios?</summary>
+				<p>Los precios se sincronizan automáticamente cada hora con la API oficial del Ministerio de Consumo del Gobierno de España. Esto garantiza que siempre veas los precios más recientes disponibles.</p>
+			</details>
+
+			<details>
+				<summary>¿Qué tipos de combustible puedo comparar?</summary>
+				<p>Puedes comparar cuatro tipos de combustible: Diésel (Gasóleo A), Diésel Extra (Gasóleo Premium), Gasolina 95 (E5) y Gasolina 98 (E5). Usa los filtros para ver solo los combustibles que te interesan.</p>
+			</details>
+
+			<details>
+				<summary>¿De dónde vienen los datos de precios de combustible?</summary>
+				<p>Todos los datos provienen de la API REST oficial del Ministerio para la Transición Ecológica y el Reto Demográfico del Gobierno de España (sedeaplicaciones.minetur.gob.es). Es la misma fuente que usan las aplicaciones oficiales.</p>
+			</details>
+
+			<details>
+				<summary>¿Qué significan las flechas junto al precio?</summary>
+				<p>Las flechas indican la tendencia del precio en los últimos 3 días. Una flecha roja hacia arriba indica que el precio ha subido, una flecha verde hacia abajo indica que ha bajado, y una raya gris indica que se mantiene estable.</p>
+			</details>
+
+			<details>
+				<summary>¿Puedo guardar mis gasolineras favoritas?</summary>
+				<p>Sí, puedes marcar hasta 5 gasolineras como favoritas pulsando el icono del candado. Se guardan en tu navegador y aparecen siempre al principio con los precios actualizados.</p>
+			</details>
+		</section>
 	</main>
+
+	<!-- JSON-LD: WebApplication -->
+	<script type="application/ld+json" is:inline>
+	{
+		"@context": "https://schema.org",
+		"@type": "WebApplication",
+		"name": "Fuel Watch",
+		"url": "https://fuelwatch.es",
+		"description": "Comparador de precios de gasolina y diésel en tiempo real en más de 12.000 gasolineras de España",
+		"applicationCategory": "UtilitiesApplication",
+		"operatingSystem": "Web",
+		"inLanguage": "es",
+		"isAccessibleForFree": true,
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "EUR"
+		},
+		"author": {
+			"@type": "Organization",
+			"name": "Fuel Watch"
+		},
+		"potentialAction": {
+			"@type": "SearchAction",
+			"target": "https://fuelwatch.es/?q={search_term_string}",
+			"query-input": "required name=search_term_string"
+		}
+	}
+	</script>
+
+	<!-- JSON-LD: FAQPage -->
+	<script type="application/ld+json" is:inline>
+	{
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		"mainEntity": [
+			{
+				"@type": "Question",
+				"name": "¿Cómo encontrar la gasolinera más barata cerca de mí?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Escribe tu ciudad o código postal en el buscador de Fuel Watch. La aplicación mostrará todas las gasolineras de tu zona ordenadas por precio, del más barato al más caro. Puedes filtrar por tipo de combustible (diésel o gasolina) y por marca."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "¿Con qué frecuencia se actualizan los precios?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Los precios se sincronizan automáticamente cada hora con la API oficial del Ministerio de Consumo del Gobierno de España. Esto garantiza que siempre veas los precios más recientes disponibles."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "¿Qué tipos de combustible puedo comparar?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Puedes comparar cuatro tipos de combustible: Diésel (Gasóleo A), Diésel Extra (Gasóleo Premium), Gasolina 95 (E5) y Gasolina 98 (E5). Usa los filtros para ver solo los combustibles que te interesan."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "¿De dónde vienen los datos de precios de combustible?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Todos los datos provienen de la API REST oficial del Ministerio para la Transición Ecológica y el Reto Demográfico del Gobierno de España (sedeaplicaciones.minetur.gob.es). Es la misma fuente que usan las aplicaciones oficiales."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "¿Qué significan las flechas junto al precio?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Las flechas indican la tendencia del precio en los últimos 3 días. Una flecha roja hacia arriba indica que el precio ha subido, una flecha verde hacia abajo indica que ha bajado, y una raya gris indica que se mantiene estable."
+				}
+			},
+			{
+				"@type": "Question",
+				"name": "¿Puedo guardar mis gasolineras favoritas?",
+				"acceptedAnswer": {
+					"@type": "Answer",
+					"text": "Sí, puedes marcar hasta 5 gasolineras como favoritas pulsando el icono del candado. Se guardan en tu navegador y aparecen siempre al principio con los precios actualizados."
+				}
+			}
+		]
+	}
+	</script>
 </Layout>

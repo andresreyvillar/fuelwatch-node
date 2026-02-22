@@ -1,0 +1,19 @@
+{
+  "name": "Fuel Watch — Precios de Gasolina y Diésel en España",
+  "short_name": "Fuel Watch",
+  "description": "Compara precios de combustible en más de 12.000 gasolineras de España. Datos actualizados cada hora.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#1f2937",
+  "lang": "es",
+  "categories": ["utilities", "finance"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

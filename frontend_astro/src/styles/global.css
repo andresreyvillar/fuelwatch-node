@@ -31,3 +31,102 @@ body {
 .astro-dark body {
   @apply bg-[#0a0a0a] text-gray-100;
 }
+
+/* SEO content - visible to crawlers, hidden when React hydrates */
+.seo-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 1rem;
+  text-align: center;
+}
+
+.seo-content h1 {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-secondary);
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.seo-content p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.astro-dark .seo-content h1 {
+  color: #f3f4f6;
+}
+
+.astro-dark .seo-content p {
+  color: #9ca3af;
+}
+
+.seo-faq {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 3rem;
+}
+
+.seo-faq h2 {
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: var(--color-secondary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.astro-dark .seo-faq h2 {
+  color: #f3f4f6;
+}
+
+.seo-faq details {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 1rem 0;
+}
+
+.astro-dark .seo-faq details {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.seo-faq summary {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--color-secondary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.seo-faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-faq summary::before {
+  content: '+';
+  display: inline-block;
+  width: 1.25rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  margin-right: 0.5rem;
+}
+
+.seo-faq details[open] summary::before {
+  content: '−';
+}
+
+.astro-dark .seo-faq summary {
+  color: #f3f4f6;
+}
+
+.seo-faq details p {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.7;
+  margin-top: 0.75rem;
+  padding-left: 1.75rem;
+}
+
+.astro-dark .seo-faq details p {
+  color: #9ca3af;
+}

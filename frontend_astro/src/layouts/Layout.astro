@@ -3,25 +3,54 @@ import '../styles/global.css';
 
 interface Props {
 	title: string;
+	description?: string;
+	canonicalURL?: string;
 }
 
-const { title } = Astro.props;
+const {
+	title,
+	description = 'Compara precios de gasolina y diesel en tiempo real en todas las gasolineras de España. Encuentra la gasolinera más barata cerca de ti. Precios actualizados cada hora desde el Ministerio de Consumo.',
+	canonicalURL = Astro.url.href
+} = Astro.props;
+
+const siteName = 'Fuel Watch';
 ---
 
 <!doctype html>
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content="Fuel Watch - Precios de gasolina en tiempo real" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		
+
+		<!-- SEO -->
+		<meta name="description" content={description} />
+		<meta name="robots" content="index, follow" />
+		<meta name="keywords" content="precio gasolina, precio diesel, gasolinera barata, combustible España, gasolina hoy, diesel hoy, comparador gasolineras, precio gasolina 95, precio gasoleo, gasolinera cerca de mi" />
+		<link rel="canonical" href={canonicalURL} />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonicalURL} />
+		<meta property="og:site_name" content={siteName} />
+		<meta property="og:locale" content="es_ES" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+
+		<!-- Favicon & PWA -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="manifest" href="/manifest.json" />
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="theme-color" content="#1f2937" id="meta-theme-color" />
-		
+
+		<meta name="generator" content={Astro.generator} />
+
 		<script is:inline>
 		  function updateThemeColor() {
 			const isDark = document.documentElement.classList.contains('astro-dark');
