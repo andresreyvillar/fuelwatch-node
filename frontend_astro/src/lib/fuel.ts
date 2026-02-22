@@ -154,3 +154,4 @@ function getSearchConditions(query: string): string {
   }
   return conditions.map(c => c.replace(/\(/g, '\\(').replace(/\)/g, '\\)')).join(',');
 }
+
