@@ -72,17 +72,21 @@ export async function updateDataFromMinistry() {
 async function attachTrends(data: any[]) {
   if (!data || data.length === 0) return data;
   const client = checkSupabase();
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const daysAgo = new Date();
+  daysAgo.setDate(daysAgo.getDate() - 3);
+  const daysAgoStr = daysAgo.toISOString().split('T')[0];
   const stationIds = data.map(s => s.id_ss);
   const { data: historyData } = await client
     .from('price_history')
-    .select('station_id, diesel, diesel_extra, gas95, gas98')
+    .select('station_id, fecha, diesel, diesel_extra, gas95, gas98')
     .in('station_id', stationIds)
-    .eq('fecha', yesterdayStr);
+    .lte('fecha', daysAgoStr)
+    .order('fecha', { ascending: false })
+    .limit(stationIds.length);
   const trends: Record<number, any> = {};
-  historyData?.forEach(h => { trends[h.station_id] = h; });
+  historyData?.forEach(h => {
+    if (!trends[h.station_id]) trends[h.station_id] = h;
+  });
   return data.map(s => ({ ...s, trend: trends[s.id_ss] || null }));
 }
 
