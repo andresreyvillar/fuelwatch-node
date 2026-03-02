@@ -50,7 +50,7 @@ async function syncPrices() {
       cp: eess['C.P.'],
       longitud: eess['Longitud (WGS84)'],
       latitud: eess['Latitud'],
-      fecha_actualizacion: new Date().toISOString(),
+      fecha_actualizacion: new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Madrid' }).replace(' ', 'T'),
     });
 
     if (diesel > 0 || gas95 > 0 || dieselExtra > 0 || gas98 > 0) {

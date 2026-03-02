@@ -351,7 +351,7 @@ const FuelApp: React.FC = () => {
           {lastUpdate && (
             <div className='flex items-center gap-1.5 text-[10px] font-bold text-white/40 desk:text-gray-400 mr-4'>
               <Clock size={12} />
-              <span>{lastUpdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'Europe/Madrid' })} {lastUpdate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' })}</span>
+              <span>{lastUpdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} {lastUpdate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
           )}
           <div className='hidden desk:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
