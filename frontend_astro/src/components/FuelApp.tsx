@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
+import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, Clock } from 'lucide-react';
 import StationCard from './StationCard';
 
 const FilterForm = ({
@@ -276,6 +276,14 @@ const FuelApp: React.FC = () => {
     });
   };
 
+  const lastUpdate = useMemo(() => {
+    const allStations = [...stations, ...pinnedStations];
+    if (allStations.length === 0) return null;
+    const dates = allStations.map(s => s.fecha_actualizacion).filter(Boolean).map(d => new Date(d).getTime());
+    if (dates.length === 0) return null;
+    return new Date(Math.max(...dates));
+  }, [stations, pinnedStations]);
+
   const sortedPinnedStations = useMemo(() => {
     return [...pinnedStations].sort((a, b) => {
       const getPrice = (s: any) => {
@@ -339,7 +347,14 @@ const FuelApp: React.FC = () => {
         <header className='bg-secondary desk:bg-white astro-dark:desk:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors z-50 sticky top-0'>
           <button onClick={() => setIsSidebarOpen(true)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'desk:opacity-100' : 'bg-white/10 desk:bg-gray-100 text-white desk:text-secondary astro-dark:desk:text-white'}`}><Menu size={24}/></button>
           <h1 className={`text-xl font-black ml-4 desk:text-secondary text-white astro-dark:desk:text-white transition-all`}>FUEL <span className='text-primary'>WATCH</span></h1>
-          <div className='flex-1' /><div className='hidden desk:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
+          <div className='flex-1' />
+          {lastUpdate && (
+            <div className='flex items-center gap-1.5 text-[10px] font-bold text-white/40 desk:text-gray-400 mr-4'>
+              <Clock size={12} />
+              <span>{lastUpdate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} {lastUpdate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          )}
+          <div className='hidden desk:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
         </header>
         <div className='flex-1 overflow-y-auto custom-scrollbar p-4 desk:p-8'><div className='max-w-4xl w-full mx-auto'>
           {sortedPinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{sortedPinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}

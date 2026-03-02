@@ -14,29 +14,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Sync fuel prices
-        run: |
-          echo "Starting fuel price synchronization..."
-          ENDPOINT="https://fuelwatch.pages.dev/api/update-prices"
-          echo "Calling: $ENDPOINT"
-          
-          # Capturar la respuesta y el código HTTP de forma robusta
-          full_response=$(curl -s -w "HTTP_STATUS:%{http_code}" "$ENDPOINT")
-          http_code=$(echo "$full_response" | grep -o "HTTP_STATUS:[0-9]*" | cut -d: -f2)
-          body=$(echo "$full_response" | sed "s/HTTP_STATUS:\$http_code//")
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-          echo "HTTP Code: $http_code"
-          echo "Body: $body"
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
 
-          if [ "$http_code" = "200" ] && echo "$body" | grep -q "success.*true"; then
-            echo "✅ Sync successful!"
-            exit 0
-          else
-            echo "❌ Sync failed (HTTP: $http_code)"
-            exit 1
-          fi
+      - name: Sync fuel prices to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: node scripts/sync-prices.mjs
 
       - name: Log sync status
         if: always()
-        run: |
-          echo "Fuel price sync workflow completed at $(date)"
+        run: echo "Fuel price sync workflow completed at $(date)"

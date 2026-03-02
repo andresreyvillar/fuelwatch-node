@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/AndresR-V/fuel-watch/issues"
   },
-  "homepage": "https://github.com/AndresR-V/fuel-watch#readme"
+  "homepage": "https://github.com/AndresR-V/fuel-watch#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.98.0"
+  }
 }
