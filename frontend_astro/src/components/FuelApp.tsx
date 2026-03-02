@@ -102,6 +102,8 @@ const FuelApp: React.FC = () => {
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
+    document.getElementById('app')?.scrollIntoView({ behavior: 'instant' });
+
     setIsBrowser(true);
     const savedPins = localStorage.getItem('fuelwatch_pins');
     let pinIds: number[] = [];
@@ -324,16 +326,16 @@ const FuelApp: React.FC = () => {
   const filterProps = { search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit: handleSubmitSearch, onSelectSuggestion: (s: string) => { setSearch(s); handleSubmitSearch(); setSuggestions([]); setIsSearchFocused(false); } };
 
   return (
-    <div className='h-screen w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col desk:flex-row transition-colors duration-300 overflow-hidden'>
+    <div className='h-[100dvh] w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col desk:flex-row transition-colors duration-300 overflow-hidden'>
       {isSidebarOpen && <div className='fixed inset-0 z-[100] desk:hidden bg-secondary/20 backdrop-blur-sm' onClick={() => setIsSidebarOpen(false)} />}
-      <aside className={`fixed desk:relative z-[110] h-screen bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 flex-shrink-0 ${isSidebarOpen ? 'translate-x-0 w-80 p-6' : '-translate-x-full desk:translate-x-0 desk:w-0 overflow-hidden p-0'}`}>
+      <aside className={`fixed top-0 left-0 desk:relative z-[110] h-[100dvh] bg-secondary transition-all duration-300 ease-in-out border-r border-white/5 flex-shrink-0 ${isSidebarOpen ? 'translate-x-0 w-80 p-6' : '-translate-x-full desk:translate-x-0 desk:w-0 overflow-hidden p-0'}`}>
         <div className='flex flex-col h-full overflow-hidden'>
           <div className='mb-10 shrink-0 flex items-center justify-between'><h1 className='text-2xl font-black flex items-center text-white'>FUEL <span className='text-primary ml-1'>WATCH</span></h1><button onClick={() => setIsSidebarOpen(false)} className='desk:hidden text-white/40 hover:text-white'><X size={24}/></button></div>
           <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar'><FilterForm isDark={true} {...filterProps} /></div>
           <div className='mt-6 pt-6 border-t border-white/5 shrink-0'><button onClick={toggleTheme} className='w-full flex items-center justify-center space-x-3 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-white transition-all'>{theme === 'light' ? <><Moon size={18}/><span>Modo Oscuro</span></> : <><Sun size={18}/><span>Modo Claro</span></>}</button></div>
         </div>
       </aside>
-      <div className='flex-1 flex flex-col h-screen overflow-hidden'>
+      <div className='flex-1 flex flex-col h-[100dvh] overflow-hidden'>
         <header className='bg-secondary desk:bg-white astro-dark:desk:bg-[#111] p-4 flex items-center border-b border-gray-100 astro-dark:border-white/5 shadow-sm shrink-0 transition-colors z-50 sticky top-0'>
           <button onClick={() => setIsSidebarOpen(true)} className={`p-2 rounded-xl transition-colors ${isSidebarOpen ? 'desk:opacity-100' : 'bg-white/10 desk:bg-gray-100 text-white desk:text-secondary astro-dark:desk:text-white'}`}><Menu size={24}/></button>
           <h1 className={`text-xl font-black ml-4 desk:text-secondary text-white astro-dark:desk:text-white transition-all`}>FUEL <span className='text-primary'>WATCH</span></h1>

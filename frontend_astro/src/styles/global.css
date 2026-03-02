@@ -24,16 +24,8 @@
   opacity: 0;
 }
 
-html {
-  scroll-snap-type: y proximity;
-}
-
 body {
   @apply bg-gray-50 text-gray-900 transition-colors duration-300;
-}
-
-#app {
-  scroll-snap-align: start;
 }
 
 .astro-dark body {
