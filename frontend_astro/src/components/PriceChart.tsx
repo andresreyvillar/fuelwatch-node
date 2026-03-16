@@ -35,8 +35,10 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPri
     displayDate: new Date(d.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
   }));
 
-  const showDiesel = activeFilters.includes('diesel');
-  const showGasolina = activeFilters.includes('gasolina');
+  const hasDiesel = activeFilters.includes('diesel') && formattedData.some(d => d.diesel && d.diesel > 0);
+  const hasDieselExtra = activeFilters.includes('diesel') && formattedData.some(d => d.diesel_extra && d.diesel_extra > 0);
+  const hasGas95 = activeFilters.includes('gasolina') && formattedData.some(d => d.gas95 && d.gas95 > 0);
+  const hasGas98 = activeFilters.includes('gasolina') && formattedData.some(d => d.gas98 && d.gas98 > 0);
 
   return (
     <div className='w-full h-64 mt-4 bg-gray-50/50 astro-dark:bg-white/5 rounded-2xl p-2 desk:p-4'>
@@ -72,7 +74,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPri
             }}
           />
           {/* Diesel - Solid Blue */}
-          {showDiesel && (
+          {hasDiesel && (
             <Line 
               type='monotone' 
               dataKey='diesel' 
@@ -85,7 +87,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPri
             />
           )}
           {/* Diesel Extra - Solid Dark Blue */}
-          {showDiesel && (
+          {hasDieselExtra && (
             <Line 
               type='monotone' 
               dataKey='diesel_extra' 
@@ -97,7 +99,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPri
             />
           )}
           {/* Gasolina 95 - Solid Amber */}
-          {showGasolina && (
+          {hasGas95 && (
             <Line 
               type='monotone' 
               dataKey='gas95' 
@@ -109,7 +111,7 @@ const PriceChart: React.FC<PriceChartProps> = ({ data, activeFilters, currentPri
             />
           )}
           {/* Gasolina 98 - Solid Brown */}
-          {showGasolina && (
+          {hasGas98 && (
             <Line 
               type='monotone' 
               dataKey='gas98' 
