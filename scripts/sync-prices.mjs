@@ -17,7 +17,7 @@ function parsePrice(value) {
 
 async function syncPrices() {
   console.log('Fetching from Ministry API...');
-  const url = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
+  const url = 'https://energia.serviciosmin.gob.es/ServiciosRestCarburantes/PreciosCarburantes/EstacionesTerrestres/';
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Ministry API responded ${response.status}`);
 
