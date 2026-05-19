@@ -22,6 +22,22 @@ jobs:
       - name: Install dependencies
         run: npm install @supabase/supabase-js
 
+      - name: Diagnose Ministry API connectivity
+        continue-on-error: true
+        run: |
+          echo "=== Runner egress IP ==="
+          curl -sS https://api.ipify.org && echo ""
+          curl -sS https://ipinfo.io/json || true
+          echo ""
+          echo "=== Ministry API: default UA ==="
+          curl -sS -o /tmp/resp1.txt -D /tmp/h1.txt -w "HTTP: %{http_code}\nTime: %{time_total}s\n" "https://energia.serviciosmin.gob.es/ServiciosRestCarburantes/PreciosCarburantes/EstacionesTerrestres/"
+          echo "--- response headers ---"; cat /tmp/h1.txt
+          echo "--- first 300 bytes of body ---"; head -c 300 /tmp/resp1.txt; echo ""
+          echo "=== Ministry API: browser UA ==="
+          curl -sS -o /tmp/resp2.txt -w "HTTP: %{http_code}\n" -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" "https://energia.serviciosmin.gob.es/ServiciosRestCarburantes/PreciosCarburantes/EstacionesTerrestres/"
+          echo "=== Ministry API: with Accept-Language es ==="
+          curl -sS -o /tmp/resp3.txt -w "HTTP: %{http_code}\n" -H "Accept-Language: es-ES,es;q=0.9" -H "Accept: application/json" "https://energia.serviciosmin.gob.es/ServiciosRestCarburantes/PreciosCarburantes/EstacionesTerrestres/"
+
       - name: Sync fuel prices to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
