@@ -1,6 +1,6 @@
 ---
 slice: estadistica-zona-4-carburantes
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
