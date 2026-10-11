@@ -1,0 +1,19 @@
+# Pruebas zombi de historico-ultimos-30-dias: al menos una por escenario del slice.
+# Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
+# EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
+# find/replace se completan en la implementación (tasks 2.3): getStationHistory() se reescribe en este slice.
+
+- scenario: historico-ultimos-30-dias
+  file: frontend_astro/src/lib/fuel.ts
+  expect: [historico-ultimos-30-dias, historico-con-huecos-no-se-rellena]
+  why: "si el histórico se ordena de más reciente a más antiguo, la serie llega al revés y el gráfico se dibuja invertido"
+
+- scenario: historico-con-huecos-no-se-rellena
+  file: frontend_astro/src/lib/fuel.ts
+  expect: [historico-ultimos-30-dias, historico-con-huecos-no-se-rellena]
+  why: "si el corte de la ventana se desplaza un día (hoy − 30), entra un día anterior a la ventana"
+
+- scenario: historico-sin-datos-recientes
+  file: frontend_astro/src/lib/fuel.ts
+  expect: [historico-ultimos-30-dias, historico-con-huecos-no-se-rellena, historico-sin-datos-recientes]
+  why: "si se quita el filtro de fecha, vuelven los días antiguos y una estación sin datos recientes deja de responder vacío"

@@ -274,5 +274,31 @@ elementos:
           válido y responde null si no queda ninguno",
         slice: estadistica-zona-4-carburantes,
         relaciones: { relaciona: [ estadistica-de-zona, carburante, precio, localidad ] }
+      },
+    {
+        id: historico-ultimos-30-dias,
+        tipo: EscenarioFuncional,
+        nombre: Histórico de los últimos 30 días,
+        descripcion: "El conductor abre el gráfico de una estación y ve sus precios diarios del último mes, del más antiguo al
+          más reciente",
+        clase: feliz,
+        relaciones: { especifica: [ consultar-historico ] }
+      },
+    {
+        id: historico-sin-datos-recientes,
+        tipo: EscenarioFuncional,
+        nombre: Histórico sin datos recientes,
+        descripcion: "La estación no tiene precios diarios en los últimos 30 días: el gráfico indica que no hay datos suficientes",
+        clase: error,
+        relaciones: { especifica: [ consultar-historico ] }
+      },
+    {
+        id: historico-30-dias,
+        tipo: Slice,
+        nombre: Histórico de los últimos 30 días,
+        descripcion: "GET /api/history devuelve los precios diarios de la estación entre hoy − 29 y hoy (UTC), en orden
+          ascendente y sin rellenar huecos",
+        slice: historico-ultimos-30-dias,
+        relaciones: { relaciona: [ historico-de-precios, precio-diario ] }
       }
   ]

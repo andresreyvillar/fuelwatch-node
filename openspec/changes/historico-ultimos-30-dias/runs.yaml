@@ -1,0 +1,11 @@
+- run: 2026-10-11T18:22:07.446Z
+  fase: tdd
+  actor: agente
+  gates:
+    validate: pass
+    specs-untouched: pass
+    specs-coverage: pass
+    ceremony: pass
+    coverage: pass
+    red: pass
+  notas: rojo impuesto 3/3; rojo verificado por aserción (devuelve los días más antiguos); regresión 3/3
