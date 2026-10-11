@@ -265,5 +265,14 @@ elementos:
           muestra estadística de zona y las estaciones se listan sin compararse,
         clase: error,
         relaciones: { especifica: [ comparar-precio-con-la-zona ] }
+      },
+    {
+        id: estadistica-zona-4-carburantes,
+        tipo: Slice,
+        nombre: Estadística de zona con los cuatro carburantes,
+        descripcion: "GET /api/stats devuelve mínimo, máximo y media de los cuatro carburantes, omite los que no tienen precio
+          válido y responde null si no queda ninguno",
+        slice: estadistica-zona-4-carburantes,
+        relaciones: { relaciona: [ estadistica-de-zona, carburante, precio, localidad ] }
       }
   ]

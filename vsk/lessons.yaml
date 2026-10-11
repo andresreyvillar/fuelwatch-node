@@ -1,0 +1,14 @@
+# Lecciones de este proyecto (vsk lesson). La confianza se calcula; no se edita a mano.
+- id: setup-commiteado-antes-del-primer-slice
+  cuando: Tras instalar, actualizar o reconfigurar VSK y antes de abrir el primer change pack
+  regla: La base del setup (vsk/, openspec/ con sus .gitkeep, skills, agentes y hooks) DEBE estar commiteada antes de
+    vsk-propose, porque specs-untouched trata lo no trackeado bajo openspec/specs como specs consolidadas modificadas
+  nivel: protocolo
+  donde: PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-11
+      nota: Gate specs-untouched en rojo en el change estadistica-zona-4-carburantes por openspec/specs/.gitkeep sin trackear;
+        resuelto con el commit base 70c6d3b
+      change: estadistica-zona-4-carburantes
+  promovida: true

@@ -58,3 +58,9 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
 - Favoritos del usuario solo en `localStorage`; no hay cuentas ni datos personales en Supabase.
 
 ## Reglas nacidas de lecciones
+
+- La base del setup de VSK (`vsk/`, `openspec/` con sus `.gitkeep`, `.agents/skills/`, `.claude/agents/`,
+  `.claude/settings.json`) DEBE estar commiteada antes de abrir un change pack con vsk-propose, porque
+  `specs-untouched` trata lo no trackeado bajo `openspec/specs/` como specs consolidadas modificadas. Vale
+  también tras cada `install.sh --upgrade` o reconfiguración. *Lección:* `setup-commiteado-antes-del-primer-slice`.
+  *Comprobado en:* `git status --short vsk openspec .agents .claude` sin salida antes de `vsk new`.
