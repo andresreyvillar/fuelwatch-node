@@ -1,6 +1,6 @@
 ---
 slice: historico-ultimos-30-dias
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
