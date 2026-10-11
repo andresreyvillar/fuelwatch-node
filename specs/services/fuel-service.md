@@ -50,9 +50,11 @@ export async function getStationHistory(id: number): Promise<HistoryEntry[]>
 FROM price_history
 SELECT fecha, diesel, gas95, diesel_extra, gas98
 WHERE station_id = {id}
+  AND fecha >= historyWindowStart()
 ORDER BY fecha ASC
-LIMIT 30
 ```
+
+`historyWindowStart()` devuelve la fecha UTC de hoy − (`HISTORY_WINDOW_DAYS` − 1), con `HISTORY_WINDOW_DAYS = 30`: los últimos 30 días naturales, incluido hoy. Los días que falten no se rellenan con días anteriores.
 
 ---
 

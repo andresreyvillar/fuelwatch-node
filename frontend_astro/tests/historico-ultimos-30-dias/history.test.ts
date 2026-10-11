@@ -102,7 +102,7 @@ afterEach(() => {
 
 describe('GET /api/history — histórico de los últimos 30 días', () => {
   /** @scenarios historico-ultimos-30-dias */
-  test.fails('historico-ultimos-30-dias: devuelve los días entre hoy − 29 y hoy, en orden ascendente', async () => {
+  test('historico-ultimos-30-dias: devuelve los días entre hoy − 29 y hoy, en orden ascendente', async () => {
     const sixtyDays = range(0, 59).map((days) => dailyPrices(STATION_ID, days));
     const otherStation = range(0, 5).map((days) => dailyPrices(OTHER_STATION_ID, days));
     givenPriceHistory([...sixtyDays, ...otherStation]);
@@ -117,7 +117,7 @@ describe('GET /api/history — histórico de los últimos 30 días', () => {
   });
 
   /** @scenarios historico-con-huecos-no-se-rellena */
-  test.fails('historico-con-huecos-no-se-rellena: solo los días existentes de la ventana, sin días más antiguos', async () => {
+  test('historico-con-huecos-no-se-rellena: solo los días existentes de la ventana, sin días más antiguos', async () => {
     givenPriceHistory([45, 40, 30, 29, 20, 3].map((days) => dailyPrices(STATION_ID, days)));
 
     const { status, body } = await requestHistory(String(STATION_ID));
@@ -127,7 +127,7 @@ describe('GET /api/history — histórico de los últimos 30 días', () => {
   });
 
   /** @scenarios historico-sin-datos-recientes */
-  test.fails('historico-sin-datos-recientes: responde una lista vacía si todos los días son anteriores a hoy − 29', async () => {
+  test('historico-sin-datos-recientes: responde una lista vacía si todos los días son anteriores a hoy − 29', async () => {
     givenPriceHistory(range(30, 40).map((days) => dailyPrices(STATION_ID, days)));
 
     const { status, body } = await requestHistory(String(STATION_ID));

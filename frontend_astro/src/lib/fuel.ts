@@ -90,16 +90,24 @@ async function attachTrends(data: any[]) {
   return data.map(s => ({ ...s, trend: trends[s.id_ss] || null }));
 }
 
+const HISTORY_WINDOW_DAYS = 30;
+
 export async function getStationHistory(id: number) {
   const client = checkSupabase();
   const { data, error } = await client
     .from('price_history')
     .select('fecha, diesel, gas95, diesel_extra, gas98')
     .eq('station_id', id)
-    .order('fecha', { ascending: true })
-    .limit(30);
+    .gte('fecha', historyWindowStart())
+    .order('fecha', { ascending: true });
   if (error) throw error;
   return data;
+}
+
+function historyWindowStart(): string {
+  const start = new Date();
+  start.setUTCDate(start.getUTCDate() - (HISTORY_WINDOW_DAYS - 1));
+  return start.toISOString().split('T')[0];
 }
 
 export async function getStationsByIds(ids: number[]) {

@@ -20,8 +20,10 @@ GET /api/history
 2. Llama a `getStationHistory(parseInt(id))` de `fuel.ts`
 3. Query a `price_history`:
    - Filtra por `station_id = id`
+   - Filtra `fecha >= hoy − 29 dias` (fecha UTC): ultimos 30 dias naturales, incluido hoy
    - Ordena por `fecha` ascendente
-   - Limite de 30 registros (ultimos 30 dias)
+   - Sin limite de registros; los dias sin datos no se rellenan con dias anteriores
+   - Si no hay dias en la ventana, devuelve `[]`
    - Campos: `fecha, diesel, gas95, diesel_extra, gas98`
 
 ## Respuesta exitosa (200)

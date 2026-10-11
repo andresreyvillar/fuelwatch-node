@@ -9,3 +9,31 @@
     coverage: pass
     red: pass
   notas: rojo impuesto 3/3; rojo verificado por aserción (devuelve los días más antiguos); regresión 3/3
+- run: 2026-10-11T18:24:21.829Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 3/3; verde 3/3; regresión 3/3; zombi de orden descartado porque también lo caza la regresión
+  zombis:
+    sembrados: 3
+    cazados: 3
+- run: 2026-10-11T18:24:30.161Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "diff revisado con clean-code-typescript (naming, functions); frontend-core: sin cambios de UI"
+- run: 2026-10-11T18:26:25.973Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  rondas: 1
+  notas: "tracer sin huecos; verifier no refuta (probado en 3 TZ y contra Supabase real: borde incluido, huecos
+    sin rellenar); security sin hallazgos del diff; previos: id no numérico → 500 con error.message, RLS de
+    price_history con anon key por revisar"
