@@ -1,22 +1,30 @@
 # Pruebas zombi de estadistica-zona-4-carburantes: al menos una por escenario del slice.
 # Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
 # EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
-# find/replace se completan en la implementación (tasks 2.3): getStats() se reescribe en este slice.
 
 - scenario: cuatro-carburantes-con-precio
   file: frontend_astro/src/lib/fuel.ts
+  find: "  ['gas98', 'precio_gasolina_98'],\n"
+  replace: ""
   expect: [cuatro-carburantes-con-precio, precios-sin-dato-se-ignoran]
   why: "si se quita Gasolina 98 de la lista de carburantes, la respuesta pierde gas98 y caen los escenarios que la esperan"
 
 - scenario: precios-sin-dato-se-ignoran
   file: frontend_astro/src/lib/fuel.ts
+  find: "price => price > 0"
+  replace: "price => price >= 0"
   expect: [precios-sin-dato-se-ignoran, carburante-sin-precios-se-omite, localidad-sin-precios-validos]
   why: "si el filtro de precio válido pasa de > 0 a >= 0, los ceros entran en mínimo y media, y un carburante o una localidad sin datos deja de omitirse"
 
 - scenario: carburante-sin-precios-se-omite
   file: frontend_astro/src/lib/fuel.ts
-  why: "si un carburante sin precios válidos devuelve { min: 0, max: 0, avg: 0 } en vez de omitirse, la respuesta incluye una clave de más"
+  find: "if (validPrices.length === 0) return null;"
+  replace: "if (validPrices.length === 0) return { min: 0, max: 0, avg: 0 };"
+  expect: [carburante-sin-precios-se-omite, localidad-sin-precios-validos]
+  why: "si un carburante sin precios válidos devuelve { min: 0, max: 0, avg: 0 } en vez de omitirse, la respuesta incluye una clave de más (y una localidad sin precios deja de ser null)"
 
 - scenario: localidad-sin-precios-validos
   file: frontend_astro/src/lib/fuel.ts
+  find: "entries.length > 0 ? Object.fromEntries(entries) : null"
+  replace: "Object.fromEntries(entries)"
   why: "si sin ningún carburante con datos se devuelve {} en vez de null, la app recibe un objeto vacío"

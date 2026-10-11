@@ -87,10 +87,10 @@ interface TrendData {
 ### Stats (respuesta de /api/stats)
 
 ```typescript
-interface Stats {
-  diesel: { min: number; max: number; avg: number };
-  gas95: { min: number; max: number; avg: number };
-}
+type FuelStats = { min: number; max: number; avg: number };
+
+// Solo aparecen los carburantes con algún precio > 0 en la localidad
+type Stats = Partial<Record<'diesel' | 'diesel_extra' | 'gas95' | 'gas98', FuelStats>>;
 ```
 
 ### HistoryEntry (respuesta de /api/history)

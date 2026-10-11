@@ -52,7 +52,7 @@ describe('GET /api/stats — estadística de zona con los cuatro carburantes', (
   });
 
   /** @scenarios cuatro-carburantes-con-precio */
-  test.fails('cuatro-carburantes-con-precio: devuelve mínimo, máximo y media de cada carburante', async () => {
+  test('cuatro-carburantes-con-precio: devuelve mínimo, máximo y media de cada carburante', async () => {
     givenSupabaseReturns({
       data: [station(1.4, 1.55, 1.5, 1.65), station(1.3, 1.45, 1.6, 1.75), station(1.5, 1.65, 1.4, 1.85)],
       error: null,
@@ -70,7 +70,7 @@ describe('GET /api/stats — estadística de zona con los cuatro carburantes', (
   });
 
   /** @scenarios precios-sin-dato-se-ignoran */
-  test.fails('precios-sin-dato-se-ignoran: los precios 0 no cuentan en mínimo, máximo ni media', async () => {
+  test('precios-sin-dato-se-ignoran: los precios 0 no cuentan en mínimo, máximo ni media', async () => {
     givenSupabaseReturns({
       data: [station(1.4, 0, 1.5, 1.7), station(1.3, 1.45, 0, 0), station(0, 1.65, 1.6, 1.9)],
       error: null,
@@ -88,7 +88,7 @@ describe('GET /api/stats — estadística de zona con los cuatro carburantes', (
   });
 
   /** @scenarios carburante-sin-precios-se-omite */
-  test.fails('carburante-sin-precios-se-omite: un carburante sin precios válidos no aparece', async () => {
+  test('carburante-sin-precios-se-omite: un carburante sin precios válidos no aparece', async () => {
     givenSupabaseReturns({
       data: [station(1.4, 1.55, 1.5, 0), station(1.3, 1.45, 1.6, 0)],
       error: null,
@@ -105,7 +105,7 @@ describe('GET /api/stats — estadística de zona con los cuatro carburantes', (
   });
 
   /** @scenarios localidad-sin-precios-validos */
-  test.fails('localidad-sin-precios-validos: responde null si ninguna estación tiene precio válido', async () => {
+  test('localidad-sin-precios-validos: responde null si ninguna estación tiene precio válido', async () => {
     givenSupabaseReturns({ data: [station(0, 0, 0, 0), station(0, 0, 0, 0)], error: null });
 
     const { status, body } = await requestStats('VIGO');

@@ -8,3 +8,32 @@
     ceremony: pass
     coverage: pass
     red: pass
+- run: 2026-10-11T18:07:00.181Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 4/4 tras quitar test.fails; verde 4/4; regresión 2/2
+  zombis:
+    sembrados: 4
+    cazados: 4
+- run: 2026-10-11T18:07:48.627Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "diff revisado con clean-code-typescript (naming, functions, error-handling); frontend-core: sin
+    cambios de UI. Select derivado descartado por romper la inferencia de tipos de Supabase"
+- run: 2026-10-11T18:09:22.460Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  rondas: 1
+  notas: "tracer sin huecos; 2 verifiers no refutan (riesgos fuera de alcance: precios como string, límite 1000
+    filas PostgREST preexistente); security sin hallazgos del diff, 2 preexistentes bajos (inyección de comas
+    en getSearchConditions, error.message en 500)"

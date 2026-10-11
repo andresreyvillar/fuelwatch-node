@@ -21,16 +21,10 @@ GET /api/stats
 3. Query a `servicestations`:
    - Campos: `precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98`
    - Filtro: `.or(conditions)`
-4. Filtra precios > 0 para cada tipo
-5. Calcula min, max, avg para diesel y gas95
-6. Si no hay datos, devuelve `null`
-
-### Calculo de avg
-
-```typescript
-const getAvg = (arr: number[]) =>
-  arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-```
+4. Si no hay estaciones, devuelve `null`
+5. Para cada carburante de `STATS_FUEL_COLUMNS` (`diesel` ← `precio_diesel`, `diesel_extra` ← `precio_diesel_extra`, `gas95` ← `precio_gasolina_95`, `gas98` ← `precio_gasolina_98`), `summarizePrices()` filtra precios > 0 y calcula min, max y avg (media aritmética, sin redondeo)
+6. Un carburante sin ningún precio > 0 se omite de la respuesta
+7. Si ningún carburante tiene precios > 0, devuelve `null`
 
 ## Respuesta exitosa (200)
 
@@ -41,17 +35,27 @@ const getAvg = (arr: number[]) =>
     "max": 1.459,
     "avg": 1.329
   },
+  "diesel_extra": {
+    "min": 1.289,
+    "max": 1.559,
+    "avg": 1.419
+  },
   "gas95": {
     "min": 1.299,
     "max": 1.579,
     "avg": 1.439
+  },
+  "gas98": {
+    "min": 1.449,
+    "max": 1.729,
+    "avg": 1.589
   }
 }
 ```
 
-**Nota**: Solo calcula stats para `diesel` y `gas95`. No incluye `diesel_extra` ni `gas98` en las estadisticas (aunque los consulta).
+**Nota**: las claves de carburantes sin ningún precio > 0 en la localidad no aparecen.
 
-## Respuesta cuando no hay datos (200)
+## Respuesta cuando no hay estaciones o ningún precio > 0 (200)
 
 ```json
 null

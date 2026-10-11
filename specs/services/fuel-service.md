@@ -119,11 +119,9 @@ export async function getStats(location: string): Promise<Stats | null>
    SELECT precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98
    WHERE .or(orConditions)
    ```
-3. Filtra precios > 0 para diesel y gas95
-4. Calcula `min`, `max`, `avg` para cada tipo
-5. Return `null` si no hay datos
-
-**Nota**: Solo retorna stats de `diesel` y `gas95`, no de `diesel_extra` ni `gas98`.
+3. Return `null` si no hay estaciones
+4. `buildStats(data)`: para cada entrada de `STATS_FUEL_COLUMNS` (`diesel`, `diesel_extra`, `gas95`, `gas98` con su columna `precio_*`), `summarizePrices()` filtra precios > 0 y calcula `min`, `max`, `avg` (media aritmética sin redondeo)
+5. Un carburante sin precios > 0 se omite; si no queda ninguno, return `null`
 
 ---
 

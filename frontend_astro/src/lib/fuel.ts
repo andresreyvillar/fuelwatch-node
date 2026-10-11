@@ -120,16 +120,39 @@ export async function searchStations(query: string, page: number = 1, limit: num
   return { data: withTrends, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
 }
 
-export async function getStats(location: string) {
+const STATS_FUEL_COLUMNS = [
+  ['diesel', 'precio_diesel'],
+  ['diesel_extra', 'precio_diesel_extra'],
+  ['gas95', 'precio_gasolina_95'],
+  ['gas98', 'precio_gasolina_98'],
+] as const;
+
+type FuelStats = { min: number; max: number; avg: number };
+type Stats = Partial<Record<(typeof STATS_FUEL_COLUMNS)[number][0], FuelStats>>;
+type StationPrices = Record<(typeof STATS_FUEL_COLUMNS)[number][1], number>;
+
+export async function getStats(location: string): Promise<Stats | null> {
   const client = checkSupabase();
   const orConditions = getSearchConditions(location);
   const { data, error } = await client.from('servicestations').select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98').or(orConditions);
   if (error) throw error;
   if (!data || data.length === 0) return null;
-  const dieselArr = data.map(s => s.precio_diesel).filter(p => p > 0);
-  const gas95Arr = data.map(s => s.precio_gasolina_95).filter(p => p > 0);
-  const getAvg = (arr: number[]) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-  return { diesel: { avg: getAvg(dieselArr), min: Math.min(...dieselArr) || 0, max: Math.max(...dieselArr) || 0 }, gas95: { avg: getAvg(gas95Arr), min: Math.min(...gas95Arr) || 0, max: Math.max(...gas95Arr) || 0 } };
+  return buildStats(data);
+}
+
+function buildStats(stations: StationPrices[]): Stats | null {
+  const entries = STATS_FUEL_COLUMNS.flatMap(([fuel, column]) => {
+    const stats = summarizePrices(stations.map(station => station[column]));
+    return stats ? [[fuel, stats] as const] : [];
+  });
+  return entries.length > 0 ? Object.fromEntries(entries) : null;
+}
+
+function summarizePrices(prices: number[]): FuelStats | null {
+  const validPrices = prices.filter(price => price > 0);
+  if (validPrices.length === 0) return null;
+  const total = validPrices.reduce((sum, price) => sum + price, 0);
+  return { min: Math.min(...validPrices), max: Math.max(...validPrices), avg: total / validPrices.length };
 }
 
 function getSearchConditions(query: string): string {
