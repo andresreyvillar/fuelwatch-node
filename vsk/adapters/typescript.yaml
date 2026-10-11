@@ -1,0 +1,27 @@
+# Adaptador TypeScript / JavaScript (Vitest por defecto; Jest en los comentarios).
+id: typescript
+name: TypeScript / JavaScript
+detect: [package.json, tsconfig.json]
+test_files:
+  - '\.(test|spec)\.[cm]?[jt]sx?$'
+ignore_dirs: [node_modules, dist, build, coverage, .next, .turbo]
+# Declaración de un test: test('título', ...) / it("título", ...) con modificadores opcionales.
+test_decl: |-
+  ^\s*(?:test|it)(?:\.\w+)*\s*\(\s*(['"`])(?<title>(?:\\.|(?!\1).)*)\1
+markers:
+  # Rojo impuesto por la herramienta: Vitest test.fails / Jest test.failing FALLAN si el test pasa.
+  red:
+    - '^\s*(?:test|it)\.(?:fails|failing)\b'
+  # Pendientes: nunca valen como rojo y no pueden sobrevivir al merge.
+  pending:
+    - '^\s*(?:test|it|describe)\.(?:skip|todo|fixme)\b'
+    - '^\s*x(?:it|test|describe)\s*\('
+commands:
+  test: npx vitest run
+  test_junit: npx vitest run --reporter=junit --outputFile={junit} {files}
+  # Jest: npx jest --ci --reporters=default --reporters=jest-junit {files}  (JEST_JUNIT_OUTPUT_FILE={junit})
+  typecheck: npx tsc --noEmit
+  lint: npx eslint .
+  format: npx prettier --check .
+  audit: npm audit --audit-level=high
+clean_code_skill: clean-code-typescript

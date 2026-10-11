@@ -1,0 +1,3 @@
+# Deuda declarada (una entrada por línea). Solo decrece.
+arch: frontend_astro/src/pages/api/suggestions.ts importa lib/supabase.ts directamente (debería delegar en lib/fuel.ts)
+arch: frontend_astro/src/pages/api/debug.ts y debug-upsert.ts importan lib/supabase.ts (endpoints sin spec)

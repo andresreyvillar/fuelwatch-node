@@ -1,0 +1,3 @@
+#!/bin/sh
+# Wrapper: ./vsk/bin/vsk <comando>
+exec node "$(dirname "$0")/vsk.mjs" "$@"

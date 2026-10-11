@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Fuel Watch - Project Instructions
 
 ## Spec-Driven Development
@@ -55,3 +59,36 @@ When asked to regenerate a module, follow this process:
 - Astro 5.x + React 19 + Tailwind CSS 4 + Supabase + Recharts
 - Deployed on Cloudflare Pages (SSR mode)
 - Working directory for dev: `frontend_astro/`
+
+## Commands
+
+Run from `frontend_astro/`:
+
+- `npm run dev` — Astro dev server
+- `npm run build` — SSR build to `dist/` (Cloudflare adapter)
+- `npm run preview` — preview the build
+- `npx tsc --noEmit` — type check
+
+- `npm test` — Vitest (`vitest run`); slice tests live in `frontend_astro/tests/<slice>/`
+
+No linter or formatter is installed yet (ESLint/Prettier gates are optional in `vsk/vsk.config.yaml`). The root `package.json` `test` script is a placeholder. The ad-hoc `test-*.ts` / `debug-*.ts` scripts in `frontend_astro/` are manual Supabase/API probes, not a test suite.
+
+## Repository layout gotchas
+
+- **Only `frontend_astro/` is live.** `backend_nestjs/` (NestJS + DB pooling), `backend_legacy/` (PHP) and the root Angular files (`angular.json`, `karma.conf.js`, `tsconfig*.json`, root `README.md`) are leftovers from earlier versions. Don't modify them or follow their READMEs.
+- `frontend_astro/src/pages/api/` contains unspecced `debug*.ts` and `test.ts` endpoints in addition to the five specced ones.
+
+## Architecture notes (cross-file)
+
+- **Two independent price-sync paths, same logic duplicated:**
+  1. `scripts/sync-prices.mjs` (repo root) — run hourly by `.github/workflows/sync-fuel-prices.yml`. Reads `SUPABASE_URL` / `SUPABASE_KEY` from `process.env` (GitHub secrets). This is the production sync.
+  2. `GET /api/update-prices` → `updateDataFromMinistry()` in `src/lib/fuel.ts`, running inside the Cloudflare worker.
+  Both fetch the Ministry API (`energia.serviciosmin.gob.es/ServiciosRestCarburantes/...`), parse comma-decimal prices and upsert stations + daily history into Supabase. A change to parsing, field mapping or the Ministry URL must be applied to **both**. See `specs/flows/data-sync-flow.md`.
+- **Supabase credentials are hardcoded** in `src/lib/supabase.ts` (public anon key) because Cloudflare Pages doesn't inject env vars into the SSR runtime. Don't switch it to `import.meta.env` / `process.env`; see `CLOUDFLARE_ENV_SETUP.md` before touching env handling.
+- Deployment config lives in both `frontend_astro/wrangler.toml` (Pages, `pages_build_output_dir = "dist"`) and `frontend_astro/wrangler.jsonc` (worker, `nodejs_compat`). Cron/Actions setup is documented in `GITHUB_ACTION_SETUP.md` and `frontend_astro/CRON_SETUP.md`.
+
+## Process: specs vs. VSK
+
+Two process layers coexist: the `specs/` regeneration workflow above and VSK (Vertical Slice Kit, `AGENTS.md`, below), configured in `vsk/vsk.config.yaml` with the domain ontology in `vsk/ontology.yaml`. New behavior goes through a VSK slice (`openspec/`); when a slice changes code that a `specs/` file describes, update that spec too so regeneration doesn't undo it.
+
+@AGENTS.md

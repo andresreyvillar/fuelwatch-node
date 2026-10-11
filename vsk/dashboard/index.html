@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VSK dashboard</title>
+  <script>
+    // theme before first paint: saved choice, else the system preference
+    try { const t = localStorage.getItem("slice-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"); document.documentElement.dataset.theme = t; } catch {}
+  </script>
+  <link rel="stylesheet" href="vendor/xterm.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brandline">
+      <span class="chip" id="phase-chip">00</span>
+      <h1><b id="project">VSK dashboard</b> <i id="project-sub">en construcción.</i></h1>
+    </div>
+    <div class="target">
+      <span class="label">CHANGE PACK</span>
+      <span class="mono" id="change">esperando actividad</span>
+      <span class="mono dim" id="slice"></span>
+    </div>
+    <div class="status">
+      <span class="mode" id="mode">○ ESPERANDO</span>
+      <span class="clock mono" id="clock">00:00:00</span>
+      <button class="ghost" id="open-projects" title="Abrir o crear un proyecto">Proyectos</button>
+      <button class="ghost icon" id="theme" title="Cambiar entre modo claro y oscuro" aria-label="Cambiar tema"></button>
+      <img class="logo logo-dark" src="logo-wpr-white.svg" alt="Cloud District">
+      <img class="logo logo-light" src="logo-wpr-navy.svg" alt="Cloud District">
+    </div>
+  </header>
+
+  <div class="startbar" id="startbar" hidden>
+    <span class="label">PREPARAR PROYECTO</span>
+    <span class="checks" id="checks"></span>
+    <span class="actions" id="start-actions"></span>
+  </div>
+
+  <nav class="stages" id="stages" aria-label="Fases del ciclo"></nav>
+
+  <main class="grid" id="grid">
+    <section class="panel term" id="term-panel" aria-labelledby="t-term">
+      <div class="panel-head">
+        <h2 id="t-term"><b>Terminal</b> <i>en directo.</i></h2>
+        <div class="tools">
+          <span class="term-state" id="term-state">conectando…</span>
+          <button id="font-down" title="Letra más pequeña">A−</button>
+          <button id="font-up" title="Letra más grande">A+</button>
+          <button id="term-max" title="Terminal a pantalla completa (F2)">⤢</button>
+          <button id="term-restart" title="Reiniciar la shell" hidden>↻</button>
+        </div>
+      </div>
+      <div class="statusbar mono" id="statusbar"></div>
+      <div class="term-box" id="term"></div>
+    </section>
+
+    <section class="panel zone" id="zone-a"><nav class="tabs" data-zone="a"></nav><div class="zone-body"></div></section>
+    <section class="panel zone" id="zone-b"><nav class="tabs" data-zone="b"></nav><div class="zone-body"></div></section>
+  </main>
+
+  <!-- views: moved into a zone when their tab is selected -->
+  <div id="views" hidden>
+    <div class="view" data-view="ciclo">
+      <div class="cycle-body">
+        <div class="step">
+          <span class="label" id="step-phase">PASO ACTUAL</span>
+          <p class="step-text" id="step-text">Cuando el agente narre un paso con <span class="mono">vsk step</span>, aparecerá aquí.</p>
+          <p class="step-detail" id="step-detail"></p>
+        </div>
+        <aside class="note">
+          <h3><i>¿Qué está pasando?</i> <span class="mono dim" id="note-title"></span></h3>
+          <p id="note-text"></p>
+        </aside>
+        <div class="block lanesblock" id="lanes-block" hidden><span class="label">CHANGE PACKS · DUEÑO, EVIDENCIA Y SIGUIENTE ACCIÓN</span><ul class="lanes" id="lanes"></ul></div>
+        <div class="block gatesblock"><span class="label">GATES DE LA FASE</span><ul class="gates" id="gates"></ul></div>
+        <div class="block two">
+          <div><span class="label">SEMÁFORO</span><ul class="lights" id="lights"></ul><p class="overall" id="overall"></p></div>
+          <div><span class="label">ZOMBIS</span><ul class="zombies" id="zombies"></ul></div>
+        </div>
+        <div class="block grow"><span class="label">SALIDA DEL HARNESS</span><ol class="log mono" id="log"></ol></div>
+      </div>
+    </div>
+
+    <div class="view" data-view="ontologia">
+      <div class="view-tools">
+        <div class="seg" id="onto-mode">
+          <button data-mode="elementos" class="on">Elementos</button><button data-mode="tipos">Tipos y verbos</button>
+        </div>
+        <span class="counts" id="onto-counts"></span>
+      </div>
+      <div class="onto-canvas" id="onto"></div>
+      <ul class="findings" id="onto-findings"></ul>
+    </div>
+
+    <div class="view" data-view="slicesystem"><div class="ss" id="ss"></div></div>
+
+    <div class="view" data-view="git">
+      <div class="view-tools"><span class="branches" id="git-branches"></span></div>
+      <div class="git-scroll" id="git"></div>
+    </div>
+
+    <div class="view" data-view="arquitectura">
+      <div class="legend">
+        <span><i class="sw planned"></i>prevista</span><span><i class="sw built"></i>construida</span>
+        <span><i class="sw changing"></i>en obras</span><span><i class="sw external"></i>externa</span>
+      </div>
+      <div class="arch-canvas" id="arch"></div>
+      <p class="hint" id="arch-hint"></p>
+    </div>
+
+    <div class="view" data-view="repositorio">
+      <div class="repo-body">
+        <div class="tree-wrap"><div class="counters" id="counters"></div><ul class="tree mono" id="tree"></ul></div>
+        <div class="diff-wrap">
+          <div class="diff-head"><span class="label">CAMBIO</span> <span class="mono" id="diff-file">—</span></div>
+          <pre class="diff mono" id="diff"></pre>
+        </div>
+      </div>
+      <div class="slices" id="slices"></div>
+    </div>
+  </div>
+
+  <!-- project chooser -->
+  <div class="launcher" id="launcher" hidden>
+    <div class="launcher-card">
+      <div class="launcher-head">
+        <h2><b>Proyectos</b> <i>para empezar.</i></h2>
+        <button class="ghost" id="close-launcher">Cerrar</button>
+      </div>
+      <div class="launcher-body">
+        <div>
+          <span class="label">RECIENTES</span>
+          <ul class="recents" id="recents"></ul>
+        </div>
+        <div>
+          <span class="label">ABRIR O CREAR UNA CARPETA</span>
+          <div class="crumbs mono" id="crumbs"></div>
+          <ul class="dirs" id="dirs"></ul>
+          <div class="launcher-actions">
+            <button class="primary" id="open-here">Abrir esta carpeta</button>
+            <span class="newdir"><input id="newdir" placeholder="nombre-del-proyecto" aria-label="Nombre de la carpeta nueva"><button id="create-dir">Crear y abrir</button></span>
+          </div>
+          <p class="error" id="launcher-error"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <span>© Documento confidencial</span>
+    <span id="version">Cloud District</span>
+  </footer>
+  <script src="vendor/xterm.js"></script>
+  <script src="vendor/addon-fit.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

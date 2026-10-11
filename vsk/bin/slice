@@ -1,0 +1,4 @@
+#!/bin/sh
+# Compatibility alias for kit < 0.6 (before the rename to VSK). Removed in the next version.
+echo "aviso: el harness ahora se llama vsk (./vsk/bin/vsk); este alias desaparecerá en la próxima versión" >&2
+exec node "$(dirname "$0")/vsk.mjs" "$@"

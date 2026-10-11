@@ -1,0 +1,11 @@
+# Pruebas zombi de {{change}}: al menos una por escenario del slice {{slug}}.
+# Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
+# EXACTAMENTE el test del escenario (ni menos, ni otros); al retirarlo la suite vuelve a verde.
+#
+# - scenario: primer-escenario          # escenario del slice
+#   file: src/ruta/al/modulo.ts         # código de producción, nunca un test
+#   find: "return total + fee"          # texto que aparece UNA sola vez en el fichero
+#   replace: "return total"             # la mutación
+#   expect: [primer-escenario]          # opcional: escenarios cuyo test debe caer (por defecto, scenario)
+#   why: "si se olvida la comisión, el escenario del total debe fallar"
+[]

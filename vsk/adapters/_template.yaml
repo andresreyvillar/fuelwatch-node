@@ -1,0 +1,22 @@
+# Plantilla para un lenguaje nuevo (Go, Java, Kotlin...). Copia a <id>.yaml y ajusta.
+# Requisitos del runner de tests: poder filtrar por fichero ({files}) y emitir JUnit XML ({junit}).
+id: mi-lenguaje
+name: Mi lenguaje
+detect: [fichero-que-lo-delata]
+test_files:
+  - 'regex sobre la ruta relativa de los ficheros de test'
+ignore_dirs: []
+# Regex con el grupo con nombre <title>: el nombre del test tal como aparece en el JUnit.
+test_decl: |-
+  ^\s*func\s+(?<title>Test\w+)\s*\(
+markers:
+  red: []       # marcador que hace FALLAR la suite si el test pasa antes de implementar
+  pending: []   # skip/todo: nunca valen como rojo
+commands:
+  test: ''
+  test_junit: ''   # debe aceptar {files} (vacío = toda la suite) y escribir {junit}
+  typecheck: ''
+  lint: ''
+  format: ''
+  audit: ''
+clean_code_skill: ''   # skill de clean code del lenguaje (créala en .agents/skills)

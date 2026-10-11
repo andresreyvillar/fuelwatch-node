@@ -1,0 +1,158 @@
+# vsk.config.yaml — configuración del VSK en este proyecto.
+# La genera la skill vsk-setup. Este fichero es del proyecto: el upgrade del kit nunca lo toca.
+
+version: 1
+
+project:
+  name: fuel-watch
+  docs_language: es # idioma de slices, specs y lecciones
+
+paths:
+  slices: openspec/slices
+  specs: openspec/specs
+  changes: openspec/changes
+  lessons: docs/lecciones.md
+  debt: vsk/debt.txt # deuda declarada: solo decrece
+
+stack:
+  adapters: [ typescript ] # adaptadores de vsk/adapters (typescript, python, ...)
+  surfaces: [ web, api ] # superficies válidas para triggers ui/http
+
+# Sobrescribe los comandos por defecto de los adaptadores. Los gates los usan con run: "@nombre".
+# La app vive en frontend_astro/ y el harness ejecuta desde la raíz del repo.
+commands:
+  test: npx --prefix frontend_astro vitest run --root frontend_astro --passWithNoTests
+  test_junit_typescript: npx --prefix frontend_astro vitest run --root frontend_astro --passWithNoTests --reporter=junit
+    --outputFile={junit} {files}
+  typecheck: cd frontend_astro && npx tsc --noEmit
+  lint: cd frontend_astro && npx eslint . # ESLint aún no instalado: gate opcional
+  format: cd frontend_astro && npx prettier --check . # Prettier aún no instalado: gate opcional
+  audit: cd frontend_astro && npm audit --audit-level=high
+  e2e: cd frontend_astro && npx playwright test # Playwright aún no instalado: gate opcional
+
+git:
+  base_branch: main
+  branch_pattern: "feat/{change}"
+
+tasks:
+  tracker: none # none | jira
+  key: null # clave del proyecto Jira, si aplica
+
+retries: 3 # intentos por gate antes de escalar al humano
+
+zombie:
+  scope: suite # suite: detecta daños colaterales en todo el proyecto · slice: más rápido
+
+# Ceremonia según el tamaño del cambio. Cada change pack declara su nivel en proposal.md
+# («> **Nivel:** `small`»); el gate ceremony lo valida.
+ceremony:
+  default: standard # nivel de un change pack que no declara ninguno
+  min_sensitive: standard # nivel mínimo si se toca alguna ruta sensible
+  sensitive:
+    - "**/auth/**"
+    - "**/*.sql"
+    - "**/migrations/**"
+    - ".github/workflows/**"
+    - "**/.env*"
+    - "Dockerfile"
+    # Propias de fuel-watch: credenciales, escrituras en Supabase y sync con el Ministerio
+    - "frontend_astro/src/lib/supabase.ts"
+    - "frontend_astro/src/pages/api/update-prices.ts"
+    - "scripts/sync-prices.mjs"
+    - "frontend_astro/wrangler.*"
+
+# Modelo de los agentes de verificación (.claude/agents). Por defecto: verifier y security opus, tracer haiku.
+agents: {}
+
+# Precios en US$ por millón de tokens para estimar el coste por change pack. Sin precios, solo tokens.
+prices: {}
+
+skills:
+  # Skills que el agente DEBE cargar al entrar en cada fase (además de las de los gates de tipo skill).
+  mandatory:
+    tdd: [ clean-code-typescript ]
+    implement:
+      - clean-code-typescript
+      - frontend-core
+    refactor:
+      - clean-code-typescript
+      - frontend-core
+    verify: [ security-review ]
+  optional:
+    - frontend-core
+
+# Gates: añadir uno es añadir una entrada. Tipos:
+#   builtin  lo implementa el harness: validate, specs-untouched, specs-coverage, coverage, red, green,
+#            zombie, no-pending, runs-schema
+#   command  comando de shell; pasa con código 0. run: "@typecheck" reutiliza commands.typecheck
+#   skill    evidencia producida por una skill y registrada en runs.yaml
+#   manual   evidencia registrada en runs.yaml por una persona o un verificador
+# Campos: id, type, phase (propose|tdd|implement|refactor|verify|merge), run, skill, when (globs), required
+gates:
+  # Fase propose: el contrato está bien formado
+  - { id: validate, type: builtin, phase: propose, description: "esquema del slice y escenarios WHEN/THEN" }
+  - { id: specs-untouched, type: builtin, phase: propose, description: "specs consolidadas intactas fuera del archive" }
+  - { id: specs-coverage, type: builtin, phase: propose, description: "cada capability de specs[] tiene delta" }
+
+  # Fase tdd: semáforo en rojo impuesto
+  - { id: coverage, type: builtin, phase: tdd, description: "cada escenario tiene al menos un test" }
+  - { id: red, type: builtin, phase: tdd, description: "todos los escenarios en ROJO impuesto por la herramienta" }
+
+  # Fase implement: verde y zombis
+  - { id: green, type: builtin, phase: implement, description: "todos los escenarios en VERDE, sin marcadores" }
+  - { id: zombie, type: builtin, phase: implement, description: "cada zombi cae justo en el test de su escenario" }
+
+  # Fase refactor: ámbar hasta que el código queda limpio
+  - { id: typecheck, type: command, phase: refactor, run: "@typecheck" }
+  - { id: lint, type: command, phase: refactor, run: "@lint", required: false } # obligatorio cuando haya ESLint
+  - { id: format, type: command, phase: refactor, run: "@format", required: false }
+  - {
+      id: clean-code,
+      type: skill,
+      phase: refactor,
+      skill: clean-code-typescript,
+      description: "revisión con la skill de clean code del lenguaje"
+    }
+
+  # Fase verify: quien implementa no verifica
+  - { id: tests, type: command, phase: verify, run: "@test" }
+  - { id: traceability, type: manual, phase: verify, description: "tabla Requirement → código (ruta:línea) → test" }
+  - {
+      id: adversarial,
+      type: manual,
+      phase: verify,
+      description: "2-3 verificadores sin contexto intentan refutar los escenarios"
+    }
+  - {
+      id: security,
+      type: skill,
+      phase: verify,
+      skill: security-review,
+      description: "revisión de seguridad; cada hallazgo se cierra con prueba de explotación"
+    }
+  #   when: ["src/**/auth/**", "**/*.sql", ".github/workflows/**"]   # descomenta para aplicarlo solo en rutas sensibles
+  - { id: audit, type: command, phase: verify, run: "@audit", required: false }
+  - { id: docs, type: manual, phase: verify, description: "README y docs al día, o declarado 'sin cambios, verificado'" }
+  - { id: runs-schema, type: builtin, phase: verify, description: "runs.yaml válido" }
+
+  # Fase merge: nada pendiente
+  - {
+      id: no-pending,
+      type: builtin,
+      phase: merge,
+      description: "ningún test del slice con marcador de rojo o pendiente"
+    }
+  - { id: ceremony, type: builtin, phase: propose }
+  - { id: receipt, type: builtin, phase: verify }
+  - {
+      id: e2e,
+      type: command,
+      phase: verify,
+      run: "@e2e",
+      when: [ frontend_astro/src/components/**, frontend_astro/src/pages/**, frontend_astro/src/layouts/** ],
+      required: false
+    }
+  # Ejemplos de gates propios:
+  # - { id: e2e, type: command, phase: verify, run: "pnpm playwright test", when: ["apps/web/**"] }
+  # - { id: screenshot, type: manual, phase: verify, when: ["apps/web/**"], description: "mirar la pantalla" }
+  # - { id: nestjs, type: skill, phase: refactor, skill: nestjs-clean-typescript, when: ["apps/api/**"] }

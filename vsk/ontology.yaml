@@ -1,0 +1,269 @@
+# Ontología de fuel-watch. Tipos y verbos: los de la metaontología de VSK (vsk ontology meta).
+# Se edita con la skill ontology o con vsk ontology add / link; el dashboard la dibuja en vivo.
+version: 1
+proyecto: fuel-watch
+ambitos:
+  - { id: negocio, nombre: Negocio }
+clases: []
+elementos:
+  [
+    {
+        id: precios-carburante,
+        tipo: Dominio,
+        nombre: Precios de carburante,
+        descripcion: Consultar y comparar los precios de los carburantes en las estaciones de servicio de España a partir de los
+          datos oficiales del Ministerio
+      },
+    {
+        id: conductor,
+        tipo: Actor,
+        nombre: Conductor,
+        descripcion: Persona que busca dónde repostar y sigue sus estaciones favoritas,
+        relaciones:
+          {
+            actuaEn:
+              [
+                precios-carburante,
+                buscar-estaciones-por-localidad,
+                comparar-precio-con-la-zona,
+                consultar-historico,
+                fijar-favoritos
+              ]
+          }
+      },
+    {
+        id: ministerio,
+        tipo: Actor,
+        nombre: Ministerio,
+        descripcion: Sistema externo (energia.serviciosmin.gob.es) que publica los precios oficiales de las estaciones terrestres,
+        relaciones: { actuaEn: [ precios-carburante, sincronizar-precios ] }
+      },
+    {
+        id: sincronizador,
+        tipo: Actor,
+        nombre: Sincronizador,
+        descripcion: Cron horario de GitHub Actions que lanza la sincronización de precios,
+        relaciones: { actuaEn: [ precios-carburante, sincronizar-precios ] }
+      },
+    {
+        id: estacion-de-servicio,
+        tipo: Termino,
+        nombre: Estación de servicio,
+        descripcion: "Gasolinera terrestre identificada por el Ministerio con su IDEESS; tiene rótulo, dirección, localidad, CP,
+          horario y coordenadas",
+        atributos: { noConfundirCon: "Rótulo (la marca, no la estación)" },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: ideess,
+        tipo: Termino,
+        nombre: IDEESS,
+        descripcion: Identificador oficial y estable de una estación de servicio en el Ministerio,
+        atributos: { noConfundirCon: Un identificador interno },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: rotulo,
+        tipo: Termino,
+        nombre: Rótulo,
+        descripcion: "Marca o nombre comercial con el que opera la estación (REPSOL, BALLENOIL...)",
+        atributos: { noConfundirCon: Estación de servicio },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: carburante,
+        tipo: Termino,
+        nombre: Carburante,
+        descripcion: "Tipo de combustible con precio propio: Gasóleo A, Gasóleo Premium, Gasolina 95 E5 y Gasolina 98 E5",
+        atributos: { noConfundirCon: Familia de carburante },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: familia-de-carburante,
+        tipo: Termino,
+        nombre: Familia de carburante,
+        descripcion: "Agrupación que el conductor filtra: diésel (Gasóleo A y Premium) o gasolina (95 y 98); siempre hay al
+          menos una activa",
+        atributos: { noConfundirCon: Carburante },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: precio,
+        tipo: Termino,
+        nombre: Precio,
+        descripcion: Euros por litro de un carburante en una estación; solo es válido si es mayor que 0 (0 o vacío significa sin
+          dato),
+        atributos: { noConfundirCon: Precio diario },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: precio-diario,
+        tipo: Termino,
+        nombre: Precio diario,
+        descripcion: Último precio de un carburante en una estación en un día dado; el histórico guarda uno por día,
+        atributos: { noConfundirCon: Precio actual },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: historico-de-precios,
+        tipo: Termino,
+        nombre: Histórico de precios,
+        descripcion: Serie de precios diarios de una estación; es lo que se dibuja en el gráfico,
+        atributos: { noConfundirCon: Tendencia },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: tendencia,
+        tipo: Termino,
+        nombre: Tendencia,
+        descripcion: "Si el precio actual sube, baja o se mantiene respecto al último precio diario de hace 3 días o más",
+        atributos: { noConfundirCon: Histórico de precios },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: localidad,
+        tipo: Termino,
+        nombre: Localidad,
+        descripcion: "Municipio tal y como lo escribe el Ministerio, con el artículo al final (CORUÑA (A)); es la clave de
+          búsqueda junto al código postal",
+        atributos: { noConfundirCon: Provincia },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: estadistica-de-zona,
+        tipo: Termino,
+        nombre: Estadística de zona,
+        descripcion: "Precio mínimo, máximo y medio de cada uno de los cuatro carburantes en las estaciones de una localidad
+          buscada",
+        atributos: { noConfundirCon: Tendencia },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: favorito,
+        tipo: Termino,
+        nombre: Favorito,
+        descripcion: "Estación que el conductor fija; como máximo 5, guardados solo en su navegador",
+        atributos: { noConfundirCon: Una cuenta de usuario (no existe) },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: sincronizacion,
+        tipo: Termino,
+        nombre: Sincronización,
+        descripcion: Descarga de los precios del Ministerio y su volcado en las estaciones y el histórico; ocurre cada hora,
+        atributos: { noConfundirCon: Búsqueda },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: sugerencia,
+        tipo: Termino,
+        nombre: Sugerencia,
+        descripcion: "Localidad propuesta mientras el conductor escribe (a partir de 2 caracteres, hasta 10, en orden alfabético)",
+        atributos: { noConfundirCon: Resultado de búsqueda (son estaciones) },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: buscar-donde-repostar,
+        tipo: Epica,
+        nombre: Buscar dónde repostar,
+        descripcion: Encontrar las estaciones de una localidad y compararlas por precio,
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: seguir-mis-gasolineras,
+        tipo: Epica,
+        nombre: Seguir mis gasolineras,
+        descripcion: Tener a mano las estaciones habituales del conductor,
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: mantener-precios-al-dia,
+        tipo: Epica,
+        nombre: Mantener los precios al día,
+        descripcion: Reflejar los precios oficiales del Ministerio en cuanto se publican,
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: buscar-estaciones-por-localidad,
+        tipo: JobStory,
+        nombre: Buscar estaciones por localidad,
+        atributos:
+          {
+            cuando: escribo una localidad o un código postal,
+            quiero: ver sus estaciones de servicio con el precio de mis familias de carburante,
+            para: elegir dónde repostar más barato
+          },
+        relaciones:
+          {
+            perteneceA: [ buscar-donde-repostar ],
+            relaciona: [ localidad, estacion-de-servicio, familia-de-carburante, precio, sugerencia ]
+          }
+      },
+    {
+        id: comparar-precio-con-la-zona,
+        tipo: JobStory,
+        nombre: Comparar el precio con la zona,
+        atributos:
+          {
+            cuando: veo una estación de servicio en los resultados,
+            quiero: saber su tendencia y dónde queda su precio frente a la estadística de zona de cada carburante,
+            para: decidir si me compensa repostar allí ahora
+          },
+        relaciones: { perteneceA: [ buscar-donde-repostar ], relaciona: [ tendencia, estadistica-de-zona, carburante, precio, localidad ] }
+      },
+    {
+        id: consultar-historico,
+        tipo: JobStory,
+        nombre: Consultar el histórico de una estación,
+        atributos:
+          {
+            cuando: dudo de si una estación de servicio suele ser barata,
+            quiero: ver su histórico de precios,
+            para: decidir con datos y no con un precio puntual
+          },
+        relaciones: { perteneceA: [ buscar-donde-repostar ], relaciona: [ historico-de-precios, precio-diario ] }
+      },
+    {
+        id: fijar-favoritos,
+        tipo: JobStory,
+        nombre: Fijar estaciones favoritas,
+        atributos:
+          {
+            cuando: repito estación de servicio,
+            quiero: fijarla como favorito (máximo 5),
+            para: ver su precio al abrir la app sin buscarla
+          },
+        relaciones: { perteneceA: [ seguir-mis-gasolineras ], relaciona: [ favorito, estacion-de-servicio, precio ] }
+      },
+    {
+        id: sincronizar-precios,
+        tipo: JobStory,
+        nombre: Sincronizar precios del Ministerio,
+        atributos:
+          {
+            cuando: el Ministerio publica precios nuevos (cada hora),
+            quiero: que el sincronizador los vuelque en las estaciones de servicio y en el histórico,
+            para: que el conductor vea precios fiables
+          },
+        relaciones: { perteneceA: [ mantener-precios-al-dia ], relaciona: [ sincronizacion, ideess, precio, precio-diario ] }
+      },
+    {
+        id: estadistica-zona-cuatro-carburantes,
+        tipo: EscenarioFuncional,
+        nombre: Estadística de zona con los cuatro carburantes,
+        descripcion: "El conductor busca una localidad con estaciones que tienen precio válido de Gasóleo A, Gasóleo Premium,
+          Gasolina 95 y Gasolina 98; ve mínimo, máximo y medio de cada uno y cada estación se sitúa frente al de su
+          carburante",
+        clase: feliz,
+        relaciones: { especifica: [ comparar-precio-con-la-zona ] }
+      },
+    {
+        id: estadistica-zona-sin-precios,
+        tipo: EscenarioFuncional,
+        nombre: Localidad sin precios válidos,
+        descripcion: El conductor busca una localidad cuyas estaciones no tienen ningún precio válido (todos 0 o vacíos); no se
+          muestra estadística de zona y las estaciones se listan sin compararse,
+        clase: error,
+        relaciones: { especifica: [ comparar-precio-con-la-zona ] }
+      }
+  ]

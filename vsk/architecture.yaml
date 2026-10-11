@@ -1,0 +1,46 @@
+title: fuel-watch
+layers: [Entrada, Dominio, Datos, Salida]
+components:
+  # Entrada
+  - { id: ui, name: Interfaz web, layer: Entrada,
+      paths: ["frontend_astro/src/components/**", "frontend_astro/src/layouts/**", "frontend_astro/src/pages/index.astro", "frontend_astro/src/styles/**"],
+      description: "FuelApp (búsqueda, filtros, favoritos en localStorage), StationCard y PriceChart" }
+  - { id: api, name: API HTTP, layer: Entrada,
+      paths: ["frontend_astro/src/pages/api/**"],
+      description: "Endpoints SSR: search, history, stats, suggestions, update-prices (y debug/test sin spec)" }
+  - { id: cron, name: GitHub Actions cron, layer: Entrada,
+      paths: [".github/workflows/**"],
+      description: "Lanza la sincronización de precios cada hora" }
+
+  # Dominio
+  - { id: fuel-service, name: Servicio de carburantes, layer: Dominio,
+      paths: ["frontend_astro/src/lib/fuel.ts"],
+      description: "Búsqueda (artículos españoles), tendencias, estadísticas y sync desde la API" }
+  - { id: sync-script, name: Script de sincronización, layer: Dominio,
+      paths: ["scripts/**"],
+      description: "sync-prices.mjs: misma lógica de sync que fuel-service, ejecutada fuera de Cloudflare" }
+
+  # Datos
+  - { id: supabase-client, name: Cliente Supabase, layer: Datos,
+      paths: ["frontend_astro/src/lib/supabase.ts"],
+      description: "Cliente con anon key pública hardcodeada" }
+  - { id: supabase, name: Supabase (Postgres), layer: Datos, external: true,
+      description: "Tablas de estaciones e histórico de precios" }
+
+  # Salida / sistemas de fuera
+  - { id: ministry-api, name: API del Ministerio, layer: Salida, external: true,
+      description: "energia.serviciosmin.gob.es — precios de estaciones terrestres" }
+  - { id: cloudflare, name: Cloudflare Pages, layer: Salida, external: true,
+      description: "Hosting SSR del frontend" }
+
+edges:
+  - [ui, api]
+  - [api, fuel-service]
+  - [fuel-service, supabase-client]
+  - [supabase-client, supabase]
+  - [fuel-service, ministry-api]
+  - [cron, sync-script]
+  - [sync-script, ministry-api]
+  - [sync-script, supabase]
+  - [cloudflare, ui]
+  - [cloudflare, api]

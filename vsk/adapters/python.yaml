@@ -1,0 +1,27 @@
+# Adaptador Python (pytest, ruff, mypy).
+id: python
+name: Python
+detect: [pyproject.toml, setup.py, requirements.txt]
+test_files:
+  - '(^|/)test_[^/]*\.py$'
+  - '_test\.py$'
+ignore_dirs: [.venv, venv, __pycache__, .mypy_cache, .ruff_cache, .pytest_cache, build, dist]
+test_decl: |-
+  ^\s*(?:async\s+)?def\s+(?<title>test_\w+)\s*\(
+markers:
+  # Rojo impuesto: con strict=True un test que pasa antes de tiempo (XPASS) rompe la suite.
+  red:
+    - '@pytest\.mark\.xfail\([^)]*strict\s*=\s*True'
+  # Pendientes: skip, skipif y xfail sin strict (no impone nada).
+  pending:
+    - '@pytest\.mark\.(?:skip|skipif)\b'
+    - '@pytest\.mark\.xfail(?!\([^)]*strict\s*=\s*True)'
+commands:
+  test: python3 -m pytest -q
+  # PYTHONDONTWRITEBYTECODE evita que un .pyc de un zombi sobreviva a la restauración.
+  test_junit: PYTHONDONTWRITEBYTECODE=1 python3 -m pytest -q -p no:cacheprovider --junitxml={junit} {files}
+  typecheck: python3 -m mypy .
+  lint: python3 -m ruff check .
+  format: python3 -m ruff format --check .
+  audit: python3 -m pip_audit
+clean_code_skill: clean-code-python
