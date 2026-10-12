@@ -1,6 +1,6 @@
 ---
 slice: ruta-gasolineras
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
