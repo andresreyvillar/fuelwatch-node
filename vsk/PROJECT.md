@@ -78,3 +78,6 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
   al menos una petición real por caso de error antes de proponerlos, y el doble de los tests debe reproducir esa
   respuesta, porque el servicio puede no fallar como se espera (OSRM no da `NoRoute` a un destino sin carretera:
   lo engancha a la más cercana). *Lección:* `contrato-externo-probado-contra-el-servicio-real`.
+- Los escenarios nuevos sobre un slice ya entregado DEBEN ir en un slice nuevo (trigger y `tests_root` propios),
+  porque el gate `red` exige todos los escenarios del slice en rojo y los entregados están en verde. Mejora
+  propuesta al kit: que `red` evalúe solo los escenarios del delta. *Lección:* `escenarios-nuevos-en-slice-entregado`.

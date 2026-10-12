@@ -47,3 +47,11 @@ Reglas nacidas de fallos (skill `leccion`). Cada entrada sigue este formato:
 - **Regla:** Los escenarios de error de un servicio externo DEBEN basarse en respuestas reales (al menos una petición real por caso de error) y el doble de los tests debe reproducirlas.
 - **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones
 - **Estado:** codificada
+
+## Escenarios nuevos sobre un slice entregado, en un slice nuevo
+- **Instinct:** `escenarios-nuevos-en-slice-entregado`
+- **Qué pasó:** en `ruta-orden-y-distancia` se añadieron dos escenarios (orden por precio, distancia desde el origen) al slice entregado `ruta-gasolineras`; el gate `red` falló porque sus otros siete escenarios estaban en verde.
+- **Causa raíz:** el gate `red` evalúa todos los escenarios del slice, no solo los del change pack; el kit no tiene un flujo para modificaciones menores de slices entregados.
+- **Regla:** Los escenarios nuevos sobre un slice entregado DEBEN ir en un slice nuevo con su propio trigger y `tests_root`.
+- **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones · propuesta de mejora al kit (gate `red` por delta)
+- **Estado:** codificada

@@ -416,5 +416,14 @@ elementos:
           ruta, con la más barata de cada tramo de 100 km",
         slice: ruta-gasolineras,
         relaciones: { relaciona: [ ruta, corredor, estacion-de-servicio, precio ] }
+      },
+    {
+        id: ruta-lista-orden-distancia,
+        tipo: Slice,
+        nombre: Orden por precio y distancia desde el origen en la ruta,
+        descripcion: Selector Por km de ruta / Por precio en la lista de la ruta y etiqueta «A N km del origen · a D km de la
+          carretera»,
+        slice: ruta-orden-y-distancia,
+        relaciones: { relaciona: [ ruta, precio, estacion-de-servicio ] }
       }
   ]

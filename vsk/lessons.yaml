@@ -53,3 +53,17 @@
         Portugal); el falso de OSRM devolvía NoRoute"
       change: ruta-gasolineras
   promovida: true
+- id: escenarios-nuevos-en-slice-entregado
+  cuando: Al ampliar con escenarios nuevos un slice ya entregado (shipped) cuyos tests están en verde
+  regla: "Los escenarios nuevos sobre un slice entregado DEBEN ir en un slice nuevo (con su propio trigger y tests_root),
+    porque el gate red exige que todos los escenarios del slice estén en rojo y los ya entregados están en verde; mejora
+    propuesta al kit: que red evalúe solo los escenarios del delta del change pack"
+  nivel: protocolo
+  donde: PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-12
+      nota: "ruta-orden-y-distancia: el gate red falló al añadir dos escenarios a ruta-gasolineras (7 escenarios en verde); se
+        rehízo como slice nuevo"
+      change: ruta-orden-y-distancia
+  promovida: true

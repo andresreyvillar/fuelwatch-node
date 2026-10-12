@@ -1,0 +1,12 @@
+- run: 2026-10-12T13:24:47.863Z
+  fase: tdd
+  actor: agente
+  gates:
+    validate: pass
+    specs-untouched: pass
+    specs-coverage: pass
+    ceremony: pass
+    coverage: pass
+    red: pass
+  notas: rojo impuesto 2/2 (esqueleto route-list.ts); rehecho como slice nuevo tras fallar red al modificar
+    ruta-gasolineras
