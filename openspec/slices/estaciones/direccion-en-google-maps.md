@@ -1,6 +1,6 @@
 ---
 slice: direccion-en-google-maps
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
