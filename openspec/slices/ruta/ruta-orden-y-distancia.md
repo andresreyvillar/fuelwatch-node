@@ -1,6 +1,6 @@
 ---
 slice: ruta-orden-y-distancia
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
