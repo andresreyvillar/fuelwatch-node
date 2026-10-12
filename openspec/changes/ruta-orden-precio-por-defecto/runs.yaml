@@ -1,0 +1,13 @@
+- run: 2026-10-12T13:34:49.359Z
+  fase: refactor
+  actor: agente
+  gates:
+    typecheck: pass
+  notas: "trivial: estado inicial del selector; tsc, suite 46/46 y build OK"
+- run: 2026-10-12T13:35:17.002Z
+  fase: refactor
+  actor: agente
+  gates:
+    typecheck: pass
+  notas: "CORRIGE el run anterior: aquel registró typecheck=pass con tsc fallando (la primera edición la bloqueó
+    el hook). Ahora tsc limpio, suite 46/46, build OK"

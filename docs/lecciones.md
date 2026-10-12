@@ -55,3 +55,11 @@ Reglas nacidas de fallos (skill `leccion`). Cada entrada sigue este formato:
 - **Regla:** Los escenarios nuevos sobre un slice entregado DEBEN ir en un slice nuevo con su propio trigger y `tests_root`.
 - **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones · propuesta de mejora al kit (gate `red` por delta)
 - **Estado:** codificada
+
+## `vsk run add` solo después de ver el resultado
+- **Instinct:** `run-add-solo-tras-ver-el-resultado`
+- **Qué pasó:** dos veces seguidas (`ruta-orden-y-distancia`: `zombie=pass` antes de reforzar el test; `ruta-orden-precio-por-defecto`: `typecheck=pass` con `tsc` fallando) el hook de VSK bloqueó una edición y el `vsk run add` del mismo bloque de órdenes se registró igualmente. Se corrigieron con un run posterior que lo explica.
+- **Causa raíz:** registrar la evidencia en el mismo lote que las ediciones y las comprobaciones, sin leer antes su resultado.
+- **Regla:** `vsk run add` DEBE ejecutarse en un comando aparte, después de leer la salida de las comprobaciones que certifica.
+- **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones
+- **Estado:** codificada

@@ -81,3 +81,6 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
 - Los escenarios nuevos sobre un slice ya entregado DEBEN ir en un slice nuevo (trigger y `tests_root` propios),
   porque el gate `red` exige todos los escenarios del slice en rojo y los entregados están en verde. Mejora
   propuesta al kit: que `red` evalúe solo los escenarios del delta. *Lección:* `escenarios-nuevos-en-slice-entregado`.
+- `vsk run add` DEBE ejecutarse en un comando aparte, después de leer la salida de las comprobaciones que certifica,
+  nunca encadenado tras ediciones o comandos que pueden fallar, porque el hook puede bloquear una edición y el run
+  registraría un `pass` falso. *Lección:* `run-add-solo-tras-ver-el-resultado`.

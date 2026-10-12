@@ -67,3 +67,17 @@
         rehízo como slice nuevo"
       change: ruta-orden-y-distancia
   promovida: true
+- id: run-add-solo-tras-ver-el-resultado
+  cuando: Al registrar evidencia de gates con vsk run add durante la implementación
+  regla: vsk run add DEBE ejecutarse en un comando aparte, después de leer la salida de las comprobaciones que certifica,
+    nunca encadenado tras ediciones o comandos que pueden fallar, porque el hook de VSK puede bloquear una edición y el
+    run quedaría registrando un pass falso
+  nivel: protocolo
+  donde: PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-12
+      nota: "ruta-orden-y-distancia (zombie=pass antes de reforzar el test) y ruta-orden-precio-por-defecto (typecheck=pass
+        con tsc fallando): en ambos el hook bloqueó una edición y el run add encadenado se registró igualmente;
+        corregidos con un run posterior"
+      change: ruta-orden-precio-por-defecto

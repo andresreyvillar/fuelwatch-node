@@ -48,9 +48,9 @@ El CSS de Leaflet se importa como URL (`leaflet/dist/leaflet.css?url`) y se pint
 ## RouteStationList
 
 `src/components/RouteStationList.tsx`, lista de la ruta (se monta de nuevo con cada ruta, asi que vuelve al orden
-por defecto):
+por defecto, "Por precio"):
 
-- Selector "Ordenar": "Por km de ruta" (por defecto) | "Por precio". Ordena en el navegador con
+- Selector "Ordenar": "Por precio" (por defecto, primera opcion) | "Por km de ruta". Ordena en el navegador con
   `sortRouteStations(stations, order, priceColumn)` de `lib/route-list.ts`: por `kmRuta`, o por el precio del
   carburante con el que se pidio la ruta (guardado en el resultado, no el de los filtros actuales) y, a igual
   precio, por `kmRuta`. No muta la lista original.

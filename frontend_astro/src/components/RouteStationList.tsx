@@ -6,9 +6,10 @@ import { routePositionLabel, sortRouteStations, type RouteOrder } from '../lib/r
 export type RouteStation = Record<string, any> & { id_ss: number; kmRuta: number; desvioKm: number; masBarataDelTramo: boolean };
 
 const ORDER_OPTIONS: { value: RouteOrder; label: string }[] = [
-  { value: 'km', label: 'Por km de ruta' },
   { value: 'precio', label: 'Por precio' },
+  { value: 'km', label: 'Por km de ruta' },
 ];
+const DEFAULT_ORDER: RouteOrder = 'precio';
 
 interface RouteStationListProps {
   stations: RouteStation[];
@@ -18,9 +19,9 @@ interface RouteStationListProps {
   onTogglePin: (station: any) => void;
 }
 
-// Lista de la ruta con su selector de orden. Al calcular otra ruta se monta de nuevo y vuelve a «Por km de ruta».
+// Lista de la ruta con su selector de orden. Al calcular otra ruta se monta de nuevo y vuelve a «Por precio».
 const RouteStationList: React.FC<RouteStationListProps> = ({ stations, priceColumn, activeFilters, pinnedIds, onTogglePin }) => {
-  const [order, setOrder] = useState<RouteOrder>('km');
+  const [order, setOrder] = useState<RouteOrder>(DEFAULT_ORDER);
   const sorted = sortRouteStations(stations, order, priceColumn);
 
   return (
