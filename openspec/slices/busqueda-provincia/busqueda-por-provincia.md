@@ -1,6 +1,6 @@
 ---
 slice: busqueda-por-provincia
-status: proposed
+status: shipped
 kind: action
 actor: conductor
 trigger:
