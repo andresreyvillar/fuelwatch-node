@@ -300,5 +300,40 @@ elementos:
           ascendente y sin rellenar huecos",
         slice: historico-ultimos-30-dias,
         relaciones: { relaciona: [ historico-de-precios, precio-diario ] }
+      },
+    {
+        id: provincia,
+        tipo: Termino,
+        nombre: Provincia,
+        descripcion: "Provincia española de la estación, con la grafía del Ministerio (artículo pospuesto: CORUÑA (A)); agrupa
+          todas sus localidades",
+        atributos: { noConfundirCon: Localidad },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: buscar-provincia-por-precio,
+        tipo: EscenarioFuncional,
+        nombre: Buscar una provincia por precio,
+        descripcion: "El conductor elige una provincia en las sugerencias y ve sus estaciones con precio del carburante del
+          filtro, de la más barata a la más cara",
+        clase: feliz,
+        relaciones: { especifica: [ buscar-estaciones-por-localidad ] }
+      },
+    {
+        id: provincia-sin-carburante,
+        tipo: EscenarioFuncional,
+        nombre: Provincia sin estaciones con ese carburante,
+        descripcion: "Ninguna estación de la provincia tiene precio del carburante del filtro: la lista sale vacía",
+        clase: error,
+        relaciones: { especifica: [ buscar-estaciones-por-localidad ] }
+      },
+    {
+        id: busqueda-provincia-por-precio,
+        tipo: Slice,
+        nombre: Búsqueda por provincia ordenada por precio,
+        descripcion: "Sugerencias con provincias; GET /api/search?province&fuel devuelve las estaciones de la provincia con
+          precio de ese carburante, ordenadas de menor a mayor; GET /api/stats?province",
+        slice: busqueda-por-provincia,
+        relaciones: { relaciona: [ provincia, precio, carburante, sugerencia, estadistica-de-zona ] }
       }
   ]
