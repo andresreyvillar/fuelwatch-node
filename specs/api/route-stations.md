@@ -22,7 +22,8 @@ GET /api/route-stations?from={lon},{lat}&to={lon},{lat}&radius={km}&fuel={diesel
 1. Valida en orden `from`, `to`, `radius`, `fuel`; el primero invalido responde 400 `{ "error": "Invalid <param>" }`.
 2. Llama a `findStationsAlongRoute(from, to, radius, fuel)` de `lib/fuel.ts`:
    1. `GET https://router.project-osrm.org/route/v1/driving/{from};{to}?overview=full&geometries=polyline6&steps=true`,
-      abortado a los 10 s (`OSRM_TIMEOUT_MS`). La geometria llega codificada (`decodePolyline6`) y los pasos traen
+      abortado a los 10 s (`OSRM_TIMEOUT_MS`), con `User-Agent: FuelWatch/1.0 (+https://fuelwatch.pages.dev)`
+      (OSRM responde 403 sin esa cabecera y el `fetch` de Cloudflare Workers no la pone). La geometria llega codificada (`decodePolyline6`) y los pasos traen
       el modo de cada tramo.
       - `code` `NoRoute` o `NoSegment`, o algun `waypoints[].distance` > 5000 m (`MAX_SNAP_METERS`: OSRM engancha
         el punto a la carretera mas cercana aunque este a cientos de km, p. ej. Canarias → Portugal) →

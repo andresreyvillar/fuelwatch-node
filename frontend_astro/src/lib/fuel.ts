@@ -258,6 +258,8 @@ const MAX_SNAP_METERS = 5000;
 const OSRM_TIMEOUT_MS = 10_000;
 // Ninguna ruta por carretera dentro de España llega (la más larga, ~1.500 km): por encima no es un viaje español.
 const MAX_ROUTE_METERS = 1_600_000;
+// OSRM responde 403 sin User-Agent y el fetch de Cloudflare Workers no lo pone; su política pide identificar la app.
+const OSRM_HEADERS = { 'User-Agent': 'FuelWatch/1.0 (+https://fuelwatch.pages.dev)' };
 
 type OsrmRoute = { distance: number; duration: number; geometry: LonLat[] };
 type RouteStation = Record<string, unknown> & { id_ss: number; latitud: number; longitud: number; kmRuta: number; desvioKm: number };
@@ -269,7 +271,7 @@ async function fetchRoute(from: LonLat, to: LonLat): Promise<OsrmRoute> {
   let body: any;
   try {
     // polyline6 + steps: geometría compacta y el modo de cada paso (para descartar ferris).
-    response = await fetch(`${OSRM_ROUTE_URL}/${from.join(',')};${to.join(',')}?overview=full&geometries=polyline6&steps=true`, { signal: controller.signal });
+    response = await fetch(`${OSRM_ROUTE_URL}/${from.join(',')};${to.join(',')}?overview=full&geometries=polyline6&steps=true`, { signal: controller.signal, headers: OSRM_HEADERS });
     body = await response.json().catch(() => null);
   } catch (error) {
     throw new RoutingUnavailableError('Routing service unreachable', { cause: error });

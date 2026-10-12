@@ -52,6 +52,8 @@ const givenRoutingService = (behaviour: OsrmBehaviour): void => {
     vi.fn(async (input: string | URL, init?: RequestInit) => {
       if (!String(input).startsWith('https://router.project-osrm.org/')) throw new Error(`unexpected fetch ${input}`);
       if (behaviour === 'unreachable') throw new TypeError('fetch failed');
+      // Como el OSRM real: sin User-Agent responde 403 (el fetch de Cloudflare Workers no lo pone por defecto).
+      if (!new Headers(init?.headers).get('user-agent')) return new Response('<html>403 Forbidden</html>', { status: 403 });
       if (behaviour === 'hangs') {
         return new Promise<Response>((_, reject) => init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError'))));
       }

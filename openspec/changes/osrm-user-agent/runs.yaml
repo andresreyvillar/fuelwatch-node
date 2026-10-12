@@ -1,0 +1,13 @@
+- run: 2026-10-12T13:14:18.529Z
+  fase: refactor
+  actor: agente
+  gates:
+    typecheck: pass
+  notas: "trivial: doble de OSRM con 403 sin User-Agent reproduce el 502 de producción; arreglo de una cabecera;
+    suite 44/44"
+- run: 2026-10-12T13:14:34.064Z
+  fase: refactor
+  actor: agente
+  gates:
+    typecheck: pass
+  notas: tsc limpio tras gates
