@@ -93,3 +93,10 @@
 {"ts":"2026-10-12T13:14:35.922Z","change":"osrm-user-agent","slice":null,"kind":"gate-start","gate":"e2e","phase":"verify","type":"command"}
 {"ts":"2026-10-12T13:14:35.922Z","change":"osrm-user-agent","slice":null,"kind":"gate-end","gate":"e2e","phase":"verify","type":"command","status":"skip","ms":0,"details":"omitido por nivel trivial"}
 {"ts":"2026-10-12T13:14:35.923Z","change":"osrm-user-agent","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":1803}
+{"ts":"2026-10-12T13:14:45.736Z","change":"osrm-user-agent","slice":null,"kind":"usage","model":"claude-opus-5-5","source":"principal","session":"e1dd4182-5439-48e8-a83b-a581c2bd5885","input":14,"output":5913,"cacheRead":4742122,"cacheWrite":6874,"messages":7}
+{"ts":"2026-10-12T13:14:45.738Z","change":"osrm-user-agent","slice":null,"kind":"usage","model":"claude-sonnet-5-5","source":"subagente","session":"e1dd4182-5439-48e8-a83b-a581c2bd5885","input":2,"output":16,"cacheRead":13420,"cacheWrite":19952,"messages":1}
+{"ts":"2026-10-12T13:14:49.281Z","change":"osrm-user-agent","slice":null,"kind":"command","cmd":"gates","args":["merge","--change","osrm-user-agent"]}
+{"ts":"2026-10-12T13:14:49.306Z","change":"osrm-user-agent","slice":null,"kind":"gate-start","gate":"no-pending","phase":"merge","type":"builtin","description":"ningún test del slice con marcador de rojo o pendiente"}
+{"ts":"2026-10-12T13:14:49.306Z","change":"osrm-user-agent","slice":null,"kind":"gate-end","gate":"no-pending","phase":"merge","type":"builtin","status":"skip","ms":0,"details":"omitido por nivel trivial"}
+{"ts":"2026-10-12T13:14:49.307Z","change":"osrm-user-agent","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":25}
+{"ts":"2026-10-12T13:14:51.094Z","change":"osrm-user-agent","slice":null,"kind":"archive","to":"openspec/changes/archive/2026-10-12-osrm-user-agent"}
