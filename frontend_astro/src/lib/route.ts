@@ -11,6 +11,13 @@ const MIN_CHUNK_KM = 25;
 const MAX_CHUNKS = 30;
 const DRAWING_SPACING_KM = 0.5;
 
+// España con Canarias, Ceuta y Melilla (rectángulo; incluye también zonas de países vecinos).
+export const SPAIN_BOUNDS = { minLon: -18.3, maxLon: 4.4, minLat: 27.6, maxLat: 43.9 };
+
+export function isInSpain([lon, lat]: LonLat): boolean {
+  return lon >= SPAIN_BOUNDS.minLon && lon <= SPAIN_BOUNDS.maxLon && lat >= SPAIN_BOUNDS.minLat && lat <= SPAIN_BOUNDS.maxLat;
+}
+
 const toRadians = (degrees: number): number => (degrees * Math.PI) / 180;
 
 // Polyline codificada con 6 decimales (formato de OSRM con geometries=polyline6: pares lat, lon) → [lon, lat].

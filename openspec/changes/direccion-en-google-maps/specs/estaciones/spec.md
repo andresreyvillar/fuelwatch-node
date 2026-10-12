@@ -14,4 +14,5 @@ latitud y longitud de la estación si están dentro de España, o con su direcci
 
 verified-by:
   - frontend_astro/tests/direccion-en-google-maps/maps.test.ts::direccion-abre-google-maps
+  - frontend_astro/tests/direccion-en-google-maps/station-card-link.test.ts::direccion-abre-google-maps
   - frontend_astro/tests/direccion-en-google-maps/maps.test.ts::direccion-sin-coordenadas-busca-por-direccion

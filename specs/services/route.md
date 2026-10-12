@@ -6,6 +6,7 @@ Funciones puras, sin Supabase. Puntos en `[lon, lat]` (GeoJSON); distancias en k
 
 | Funcion | Que hace |
 |---------|----------|
+| `SPAIN_BOUNDS`, `isInSpain([lon, lat])` | Caja de Espana con Canarias, Ceuta y Melilla (lon -18.3..4.4, lat 27.6..43.9); la usan `/api/route-stations` y `lib/maps.ts` |
 | `decodePolyline6(encoded)` | Polyline de OSRM con 6 decimales (pares lat, lon) → `[lon, lat][]` |
 | `haversineKm(a, b)` | Distancia entre dos puntos |
 | `cumulativeKm(line)` | Km desde el origen hasta cada punto |

@@ -1,13 +1,11 @@
 import type { APIRoute } from 'astro';
 import { findStationsAlongRoute, RouteNotFoundError, RoutingUnavailableError } from '../../lib/fuel';
 import type { ProvinceSortFuel } from '../../lib/provinces';
-import type { LonLat } from '../../lib/route';
+import { isInSpain, type LonLat } from '../../lib/route';
 
 const ROUTE_RADII_KM = new Map([['1', 1], ['2', 2], ['5', 5], ['10', 10]]);
 const ROUTE_FUELS: readonly string[] = ['diesel', 'gas95'] satisfies ProvinceSortFuel[];
 const COORDINATES = /^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)$/;
-// España con Canarias, Ceuta y Melilla (la misma caja que usa Photon en el navegador).
-const SPAIN = { minLon: -18.3, maxLon: 4.4, minLat: 27.6, maxLat: 43.9 };
 // Las rutas no cambian: la CDN puede servir la misma respuesta durante una hora sin volver a OSRM.
 const CACHE_SECONDS = 3600;
 
@@ -20,8 +18,7 @@ const parseLonLat = (value: string | null): LonLat | null => {
   if (!match) return null;
   const lon = Number(match[1]);
   const lat = Number(match[2]);
-  const inSpain = lon >= SPAIN.minLon && lon <= SPAIN.maxLon && lat >= SPAIN.minLat && lat <= SPAIN.maxLat;
-  return inSpain ? [lon, lat] : null;
+  return isInSpain([lon, lat]) ? [lon, lat] : null;
 };
 
 const isRouteFuel = (fuel: string | null): fuel is ProvinceSortFuel => fuel !== null && ROUTE_FUELS.includes(fuel);

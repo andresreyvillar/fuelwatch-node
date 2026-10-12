@@ -122,7 +122,11 @@ div.rounded-2xl.shadow-sm.border.mb-3.animate-cascade
   │   │   │   Icono: Fuel (24px)
   │   │   └── Text info
   │   │       ├── h3: station.rotulo (font-black uppercase truncate)
-  │   │       ├── MapPin + station.direccion (text-[10px] desk:text-xs)
+  │   │       ├── a[href=googleMapsUrl(station)][target=_blank][rel=noopener noreferrer][aria-label="Abrir {direccion} en Google Maps"]
+  │   │       │   (hover:text-primary hover:underline) → MapPin aria-hidden + station.direccion (text-[10px] desk:text-xs)
+  │   │       │   `googleMapsUrl` (lib/maps.ts): https://www.google.com/maps/search/?api=1&query= + "lat,lon" si son numeros
+  │   │       │   dentro de Espana (`isInSpain`), si no "direccion, localidad, provincia" (encodeURIComponent).
+  │   │       │   Escritorio: pestana nueva; movil: app de Google Maps si esta instalada.
   │   │       └── Clock + station.horario (text-[9px] uppercase)
   │   │
   │   ├── Prices section (flex-1, center, gap-x-4)

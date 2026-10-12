@@ -9,3 +9,35 @@
     coverage: pass
     red: pass
   notas: rojo impuesto 2/2 sobre esqueleto de lib/maps.ts
+- run: 2026-10-12T13:57:37.643Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 2/2; verde 2/2; suite 48/48, tsc y build OK; URLs comprobadas con estaciones reales (362 por
+    coordenadas; 11988 en 0,0 y 16268 invertida por dirección)
+  zombis:
+    sembrados: 2
+    cazados: 2
+- run: 2026-10-12T13:57:37.694Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "clean-code-typescript y frontend-core: enlace semántico <a> con aria-label e icono aria-hidden; caja
+    de España deduplicada en lib/route.ts"
+- run: 2026-10-12T14:01:41.816Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  notas: "verifier: no refuta (URL según la documentación oficial, 12.465 estaciones reales: 4 sin coordenadas
+    válidas van por dirección, caracteres especiales intactos); security: pasa (sin inyección, tabnabbing ni
+    XSS); hueco de trazabilidad cerrado con test de render del enlace (target/rel) y zombi que lo caza"
+  zombis:
+    sembrados: 3
+    cazados: 3

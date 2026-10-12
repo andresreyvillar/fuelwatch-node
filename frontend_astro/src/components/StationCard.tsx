@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, Clock, Fuel, Lock, LockKeyholeOpen, TrendingUp, TrendingDown, Minus, AreaChart, ChevronDown as ChevronIcon } from 'lucide-react';
 import PriceChart from './PriceChart';
+import { googleMapsUrl } from '../lib/maps';
 
 interface StationProps {
   station: any;
@@ -91,10 +92,16 @@ const StationCard: React.FC<StationProps> = ({ station, activeFilters, stats, is
           
           <div className='flex-1 min-w-0'>
             <h3 className='font-black text-secondary astro-dark:text-white text-sm desk:text-base leading-tight uppercase truncate'>{station.rotulo}</h3>
-            <div className='flex items-center text-gray-400 astro-dark:text-white/40 text-[10px] desk:text-xs mt-1'>
-              <MapPin size={10} className='mr-1 shrink-0' />
+            <a
+              href={googleMapsUrl(station)}
+              target='_blank'
+              rel='noopener noreferrer'
+              aria-label={`Abrir ${station.direccion} en Google Maps`}
+              className='flex items-center min-w-0 text-gray-400 astro-dark:text-white/40 text-[10px] desk:text-xs mt-1 hover:text-primary hover:underline'
+            >
+              <MapPin aria-hidden='true' size={10} className='mr-1 shrink-0' />
               <span className='truncate'>{station.direccion}</span>
-            </div>
+            </a>
             <div className='flex items-center text-gray-400 astro-dark:text-white/30 text-[9px] mt-0.5 uppercase tracking-wider font-bold'>
               <Clock size={10} className='mr-1' />
               <span>{station.horario}</span>
