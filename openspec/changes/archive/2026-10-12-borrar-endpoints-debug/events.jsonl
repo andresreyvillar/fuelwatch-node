@@ -92,3 +92,8 @@
 {"ts":"2026-10-12T12:04:47.088Z","change":"borrar-endpoints-debug","slice":null,"kind":"gate-start","gate":"e2e","phase":"verify","type":"command"}
 {"ts":"2026-10-12T12:04:47.088Z","change":"borrar-endpoints-debug","slice":null,"kind":"gate-end","gate":"e2e","phase":"verify","type":"command","status":"skip","ms":0,"details":"omitido por nivel trivial"}
 {"ts":"2026-10-12T12:04:47.089Z","change":"borrar-endpoints-debug","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":1623}
+{"ts":"2026-10-12T12:05:03.566Z","change":"borrar-endpoints-debug","slice":null,"kind":"command","cmd":"gates","args":["merge","--change","borrar-endpoints-debug"]}
+{"ts":"2026-10-12T12:05:03.587Z","change":"borrar-endpoints-debug","slice":null,"kind":"gate-start","gate":"no-pending","phase":"merge","type":"builtin","description":"ningún test del slice con marcador de rojo o pendiente"}
+{"ts":"2026-10-12T12:05:03.587Z","change":"borrar-endpoints-debug","slice":null,"kind":"gate-end","gate":"no-pending","phase":"merge","type":"builtin","status":"skip","ms":0,"details":"omitido por nivel trivial"}
+{"ts":"2026-10-12T12:05:03.588Z","change":"borrar-endpoints-debug","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":21}
+{"ts":"2026-10-12T12:05:06.029Z","change":"borrar-endpoints-debug","slice":null,"kind":"archive","to":"openspec/changes/archive/2026-10-12-borrar-endpoints-debug"}
