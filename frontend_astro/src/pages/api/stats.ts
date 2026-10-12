@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
-import { getStats } from '../../lib/fuel';
+import { getProvinceStats, getStats } from '../../lib/fuel';
 
 export const GET: APIRoute = async ({ url }) => {
   const location = url.searchParams.get('location') || '';
+  const province = url.searchParams.get('province');
 
   try {
-    const result = await getStats(location);
+    const result = province ? await getProvinceStats(province) : await getStats(location);
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

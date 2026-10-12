@@ -46,7 +46,7 @@ beforeEach(() => {
 
 describe('GET /api/search?province= — búsqueda por provincia ordenada por precio', () => {
   /** @scenarios provincia-ordenada-por-precio */
-  test.fails('provincia-ordenada-por-precio: solo la provincia, por Gasóleo A ascendente, id a igual precio, paginada', async () => {
+  test('provincia-ordenada-por-precio: solo la provincia, por Gasóleo A ascendente, id a igual precio, paginada', async () => {
     const firstPage = await requestSearch({ province: 'PONTEVEDRA', fuel: 'diesel', page: '1', limit: '3' });
     const secondPage = await requestSearch({ province: 'PONTEVEDRA', fuel: 'diesel', page: '2', limit: '3' });
 
@@ -58,7 +58,7 @@ describe('GET /api/search?province= — búsqueda por provincia ordenada por pre
   });
 
   /** @scenarios provincia-ordenada-por-gasolina-95 */
-  test.fails('provincia-ordenada-por-gasolina-95: ordena por precio de Gasolina 95', async () => {
+  test('provincia-ordenada-por-gasolina-95: ordena por precio de Gasolina 95', async () => {
     const { status, body } = await requestSearch({ province: 'PONTEVEDRA', fuel: 'gas95', page: '1', limit: '10' });
 
     expect(status).toBe(200);
@@ -66,7 +66,7 @@ describe('GET /api/search?province= — búsqueda por provincia ordenada por pre
   });
 
   /** @scenarios provincia-excluye-sin-carburante */
-  test.fails('provincia-excluye-sin-carburante: sin precio de ese carburante no aparece ni cuenta', async () => {
+  test('provincia-excluye-sin-carburante: sin precio de ese carburante no aparece ni cuenta', async () => {
     const diesel = await requestSearch({ province: 'PONTEVEDRA', fuel: 'diesel', page: '1', limit: '10' });
     const gas95 = await requestSearch({ province: 'PONTEVEDRA', fuel: 'gas95', page: '1', limit: '10' });
 
@@ -77,7 +77,7 @@ describe('GET /api/search?province= — búsqueda por provincia ordenada por pre
   });
 
   /** @scenarios provincia-carburante-no-valido */
-  test.fails('provincia-carburante-no-valido: responde 400 sin carburante o con uno no admitido', async () => {
+  test('provincia-carburante-no-valido: responde 400 sin carburante o con uno no admitido', async () => {
     const withoutFuel = await requestSearch({ province: 'PONTEVEDRA' });
     const unknownFuel = await requestSearch({ province: 'PONTEVEDRA', fuel: 'precio_diesel' });
 

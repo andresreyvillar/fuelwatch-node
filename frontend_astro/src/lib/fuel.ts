@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { matchProvinces, PROVINCE_SORT_COLUMNS, type ProvinceSortFuel } from './provinces';
 
 function checkSupabase() {
   if (!supabase) throw new Error('Supabase client not initialized. Check your environment variables.');
@@ -146,6 +147,58 @@ export async function getStats(location: string): Promise<Stats | null> {
   if (error) throw error;
   if (!data || data.length === 0) return null;
   return buildStats(data);
+}
+
+export async function getProvinceStats(province: string): Promise<Stats | null> {
+  const client = checkSupabase();
+  const { data, error } = await client.from('servicestations').select('precio_diesel, precio_gasolina_95, precio_diesel_extra, precio_gasolina_98').eq('provincia', province);
+  if (error) throw error;
+  if (!data || data.length === 0) return null;
+  return buildStats(data);
+}
+
+export async function searchStationsByProvince(province: string, fuel: ProvinceSortFuel, page: number = 1, limit: number = 20) {
+  const skip = (page - 1) * limit;
+  const priceColumn = PROVINCE_SORT_COLUMNS[fuel];
+  const client = checkSupabase();
+  const { data, count, error } = await client.from('servicestations').select('*', { count: 'exact' }).eq('provincia', province).gt(priceColumn, 0).order(priceColumn, { ascending: true }).order('id_ss', { ascending: true }).range(skip, skip + limit - 1);
+  if (error) throw error;
+  const withTrends = await attachTrends(data);
+  return { data: withTrends, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
+}
+
+export type Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string };
+
+export async function getSuggestions(query: string): Promise<Suggestion[]> {
+  if (query.trim().length < 2) return [];
+  const localities = await findLocalities(query);
+  return [
+    ...matchProvinces(query).map((nombre): Suggestion => ({ tipo: 'provincia', nombre })),
+    ...localities.map((nombre): Suggestion => ({ tipo: 'localidad', nombre })),
+  ];
+}
+
+// PostgREST: entre comillas dobles, comas y paréntesis son literales; solo hay que escapar " y \.
+function quoteFilterValue(value: string): string {
+  return `"${value.replace(/["\\]/g, '\\$&')}"`;
+}
+
+async function findLocalities(query: string): Promise<string[]> {
+  const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
+  const orConditions = [`localidad.ilike.${quoteFilterValue(`%${query}%`)}`];
+  const upperQuery = query.toUpperCase();
+  for (const art of articles) {
+    if (upperQuery.startsWith(art)) {
+      const mainName = query.slice(art.length).trim();
+      // Format for DB: "NAME (ART)"
+      orConditions.push(`localidad.ilike.${quoteFilterValue(`%${mainName}%${art.trim()}%`)}`);
+    }
+  }
+  const client = checkSupabase();
+  const { data, error } = await client.from('servicestations').select('localidad').or(orConditions.join(',')).limit(100);
+  if (error) throw error;
+  const uniqueLocations = Array.from(new Set(data.map(item => item.localidad))).sort();
+  return uniqueLocations.slice(0, 10);
 }
 
 function buildStats(stations: StationPrices[]): Stats | null {

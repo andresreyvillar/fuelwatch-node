@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, Clock } from 'lucide-react';
 import StationCard from './StationCard';
+import { provinceSortFuel, PROVINCE_SORT_COLUMNS } from '../lib/provinces';
+import type { Suggestion } from '../lib/fuel';
 
 const FilterForm = ({
   isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit
@@ -18,12 +20,15 @@ const FilterForm = ({
           onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
           onKeyDown={(e) => { if (e.key === 'Enter') onSearchSubmit(); }}
           className={`w-full border rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary outline-none transition-all ${isDark ? 'bg-white/10 border-white/10 text-white placeholder-white/20' : 'bg-gray-50 border-gray-100 text-secondary placeholder-gray-400'}`} 
-          placeholder='Ciudad o CP...' 
+          placeholder='Ciudad, provincia o CP...'
         />
         {isSearchFocused && suggestions.length > 0 && (
           <div className={`absolute z-[70] w-full mt-2 border shadow-2xl rounded-2xl overflow-hidden ${isDark ? 'bg-[#1a1a1a] border-white/10' : 'bg-white border-gray-100'}`}>
-            {suggestions.map((s: string) => (
-              <div key={s} onClick={() => onSelectSuggestion(s)} className={`px-4 py-3 text-sm cursor-pointer hover:bg-primary/10 transition-colors ${isDark ? 'text-white border-b border-white/5' : 'text-secondary border-b border-gray-50'}`}>{s}</div>
+            {suggestions.map((s: Suggestion) => (
+              <button type='button' key={`${s.tipo}-${s.nombre}`} onClick={() => onSelectSuggestion(s)} className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm cursor-pointer hover:bg-primary/10 transition-colors ${isDark ? 'text-white border-b border-white/5' : 'text-secondary border-b border-gray-50'}`}>
+                <span>{s.nombre}</span>
+                {s.tipo === 'provincia' && <span className='text-[10px] font-black uppercase tracking-widest text-primary'>Provincia</span>}
+              </button>
             ))}
           </div>
         )}
@@ -83,8 +88,10 @@ const FuelApp: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
   const [activeFilters, setActiveFilters] = useState<string[]>(['diesel', 'gasolina']);
+  const sortFuel = provinceSortFuel(activeFilters);
   const [sortBy, setSortBy] = useState('price_asc');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -146,7 +153,10 @@ const FuelApp: React.FC = () => {
     const savedSort = localStorage.getItem('fuelwatch_sort_by');
     const savedTheme = localStorage.getItem('fuelwatch_theme') as 'light' | 'dark';
 
+    const savedProvince = localStorage.getItem('fuelwatch_last_province');
+
     if (savedSearch) { setSearch(savedSearch); setDebouncedSearch(savedSearch); }
+    if (savedSearch && savedProvince === savedSearch) setSelectedProvince(savedProvince);
     if (savedFilters) setActiveFilters(JSON.parse(savedFilters));
     if (savedBrands) setSelectedBrands(JSON.parse(savedBrands));
     if (savedSort) setSortBy(savedSort);
@@ -218,6 +228,11 @@ const FuelApp: React.FC = () => {
   }, [pinnedStations, isBrowser]);
 
   useEffect(() => { if (isBrowser && debouncedSearch) localStorage.setItem('fuelwatch_last_search', debouncedSearch); }, [debouncedSearch, isBrowser]);
+  useEffect(() => {
+    if (!isBrowser) return;
+    if (selectedProvince) localStorage.setItem('fuelwatch_last_province', selectedProvince);
+    else localStorage.removeItem('fuelwatch_last_province');
+  }, [selectedProvince, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_active_filters', JSON.stringify(activeFilters)); }, [activeFilters, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_selected_brands', JSON.stringify(selectedBrands)); }, [selectedBrands, isBrowser]);
   useEffect(() => { if (isBrowser) localStorage.setItem('fuelwatch_sort_by', sortBy); }, [sortBy, isBrowser]);
@@ -245,9 +260,12 @@ const FuelApp: React.FC = () => {
     const currentPage = resetPage ? 1 : page;
     setLoading(true);
     try {
+      const province = selectedProvince ? encodeURIComponent(selectedProvince) : null;
       const [stationsRes, statsRes] = await Promise.all([
-        fetch(`/api/search?target=${debouncedSearch}&page=${currentPage}&limit=50`),
-        fetch(`/api/stats?location=${debouncedSearch}`)
+        province
+          ? fetch(`/api/search?province=${province}&fuel=${sortFuel}&page=${currentPage}&limit=50`)
+          : fetch(`/api/search?target=${debouncedSearch}&page=${currentPage}&limit=50`),
+        province ? fetch(`/api/stats?province=${province}`) : fetch(`/api/stats?location=${debouncedSearch}`)
       ]);
       const stationsData = await stationsRes.json();
       const statsData = await statsRes.json();
@@ -265,7 +283,7 @@ const FuelApp: React.FC = () => {
     } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
-  useEffect(() => { if (debouncedSearch) fetchData(true); }, [debouncedSearch]);
+  useEffect(() => { if (debouncedSearch) fetchData(true); }, [debouncedSearch, selectedProvince, selectedProvince ? sortFuel : null]);
 
   const togglePin = (station: any) => {
     setPinnedStations(prev => {
@@ -320,6 +338,8 @@ const FuelApp: React.FC = () => {
       if (sortBy === 'brand_asc') return a.rotulo.localeCompare(b.rotulo);
       if (sortBy === 'cp_asc') return a.cp.localeCompare(b.cp);
       const getMinPrice = (s: any) => {
+        // En modo provincia el servidor ordena por un solo carburante: el navegador usa el mismo.
+        if (selectedProvince) return s[PROVINCE_SORT_COLUMNS[sortFuel]] || 999;
         const ps = [];
         if (activeFilters.includes('diesel')) ps.push(s.precio_diesel || 999);
         if (activeFilters.includes('gasolina')) ps.push(s.precio_gasolina_95 || 999);
@@ -329,9 +349,25 @@ const FuelApp: React.FC = () => {
       const priceB = getMinPrice(b);
       return sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
     });
-  }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters, sortBy]);
+  }, [stations, pinnedStations, selectedBrands, tempPriceRange, activeFilters, sortBy, selectedProvince, sortFuel]);
 
-  const filterProps = { search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit: handleSubmitSearch, onSelectSuggestion: (s: string) => { setSearch(s); handleSubmitSearch(); setSuggestions([]); setIsSearchFocused(false); } };
+  // Escribir en el buscador vuelve a la búsqueda por localidad (vaciarlo al enfocar no).
+  const changeSearch = (text: string) => { if (text) setSelectedProvince(null); setSearch(text); };
+
+  const selectSuggestion = (s: Suggestion) => {
+    setSearch(s.nombre);
+    if (s.tipo === 'provincia') {
+      setSelectedProvince(s.nombre);
+      setDebouncedSearch(s.nombre);
+      if (window.innerWidth < 800) setIsSidebarOpen(false);
+    } else {
+      setSelectedProvince(null);
+      handleSubmitSearch();
+    }
+    setSuggestions([]); setIsSearchFocused(false);
+  };
+
+  const filterProps = { search, setSearch: changeSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit: handleSubmitSearch, onSelectSuggestion: selectSuggestion };
 
   return (
     <div className='h-[100dvh] w-full bg-gray-50 astro-dark:bg-[#0a0a0a] flex flex-col desk:flex-row transition-colors duration-300 overflow-hidden'>

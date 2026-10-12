@@ -16,6 +16,8 @@ GET /api/search
 | `page` | number | `1` | Pagina actual (paginacion) |
 | `limit` | number | `20` | Resultados por pagina |
 | `ids` | string | - | IDs separados por coma (modo alternativo) |
+| `province` | string | - | Provincia exacta (modo provincia; valor de `/api/suggestions`) |
+| `fuel` | `diesel` \| `gas95` | - | Carburante de orden en modo provincia (obligatorio) |
 
 ## Modos de operacion
 
@@ -45,6 +47,20 @@ GET /api/search?ids=1234,5678,9012
 5. Devuelve datos sin metadata de paginacion
 
 **Uso**: Se usa para cargar datos frescos de estaciones favoritas (pinned).
+
+### Modo 3: Busqueda por provincia (`province` + `fuel`)
+
+```
+GET /api/search?province=PONTEVEDRA&fuel=diesel&page=1&limit=50
+```
+
+1. Si `fuel` no es `diesel` ni `gas95` (o falta), responde 400 `{ "error": "Invalid fuel" }`
+2. Llama a `searchStationsByProvince(province, fuel, page, limit)` de `fuel.ts`
+3. Query a `servicestations` con `.eq('provincia', province)` y `.gt(columna, 0)` (`diesel` -> `precio_diesel`, `gas95` -> `precio_gasolina_95`): las estaciones sin precio de ese carburante no aparecen ni cuentan
+4. Ordena por esa columna ascendente y por `id_ss` ascendente (desempate estable para paginar)
+5. Paginado con `.range()`, tendencias via `attachTrends()`, misma metadata que el modo target
+
+Precedencia: `province` > `ids` > `target`.
 
 ## Respuesta exitosa (200)
 
@@ -92,6 +108,12 @@ GET /api/search?ids=1234,5678,9012
 }
 ```
 
+## Respuesta de error (400, modo provincia)
+
+```json
+{ "error": "Invalid fuel" }
+```
+
 ## Respuesta de error (500)
 
 ```json
@@ -104,3 +126,4 @@ GET /api/search?ids=1234,5678,9012
 
 - `searchStations()` de `lib/fuel.ts`
 - `getStationsByIds()` de `lib/fuel.ts`
+- `searchStationsByProvince()` de `lib/fuel.ts`

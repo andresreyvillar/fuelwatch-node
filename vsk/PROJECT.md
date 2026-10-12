@@ -64,3 +64,8 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
   `specs-untouched` trata lo no trackeado bajo `openspec/specs/` como specs consolidadas modificadas. Vale
   también tras cada `install.sh --upgrade` o reconfiguración. *Lección:* `setup-commiteado-antes-del-primer-slice`.
   *Comprobado en:* `git status --short vsk openspec .agents .claude` sin salida antes de `vsk new`.
+- El texto que viene del usuario y entra en un filtro `.or()` de Supabase DEBE ir entre comillas dobles con
+  `quoteFilterValue()` (`lib/fuel.ts`), nunca escapado con `\(`, porque en `.or()` comas, puntos y paréntesis son
+  sintaxis de PostgREST: sin comillas, «coruña (a)» rompe la consulta y una coma añade condiciones. El doble
+  `tests/support/fake-supabase.ts` rechaza los valores reservados sin comillas, como PostgREST. *Lección:*
+  `falso-supabase-tan-estricto-como-postgrest`. *Pendiente:* `getSearchConditions()` aún usa `\(` (slice de seguridad).

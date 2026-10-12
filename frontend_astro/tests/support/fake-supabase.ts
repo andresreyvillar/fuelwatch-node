@@ -29,8 +29,7 @@ const compare = (a: unknown, b: unknown): number => {
 };
 
 const likeToRegExp = (pattern: string): RegExp => {
-  const unescaped = pattern.replace(/\\([()])/g, '$1');
-  const source = unescaped
+  const source = pattern
     .split('%')
     .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
     .join('.*');
@@ -42,12 +41,35 @@ const ilike = (column: string, pattern: string): Predicate => {
   return (row) => regExp.test(String(row[column] ?? ''));
 };
 
-// Solo condiciones `columna.ilike.patrón` separadas por comas (las comas escapadas no se usan en la app).
+// Divide `a,b,"c,d"` por las comas que no están entre comillas.
+const splitConditions = (conditions: string): string[] => {
+  const parts: string[] = [];
+  let current = '';
+  let quoted = false;
+  for (let i = 0; i < conditions.length; i++) {
+    const char = conditions[i];
+    if (quoted && char === '\\') { current += char + conditions[++i]; continue; }
+    if (char === '"') quoted = !quoted;
+    if (char === ',' && !quoted) { parts.push(current); current = ''; continue; }
+    current += char;
+  }
+  return [...parts, current];
+};
+
+// Como PostgREST: un valor con caracteres reservados debe ir entre comillas dobles (con \" y \\ escapados);
+// sin comillas, la consulta falla.
+const parseOrValue = (value: string): string => {
+  if (value.startsWith('"') && value.endsWith('"')) return value.slice(1, -1).replace(/\\(["\\])/g, '$1');
+  if (/[(),"\\]/.test(value)) throw new Error(`failed to parse logic tree (${value})`);
+  return value;
+};
+
+// Solo condiciones `columna.ilike.valor` separadas por comas.
 const orFilter = (conditions: string): Predicate => {
-  const predicates = conditions.split(',').map((condition) => {
+  const predicates = splitConditions(conditions).map((condition) => {
     const [column, operator, ...rest] = condition.split('.');
     if (operator !== 'ilike') throw new Error(`fake-supabase: or() no soporta ${operator}`);
-    return ilike(column, rest.join('.'));
+    return ilike(column, parseOrValue(rest.join('.')));
   });
   return (row) => predicates.some((predicate) => predicate(row));
 };
@@ -97,9 +119,10 @@ const query = (state: QueryState) => {
         head: options.head ?? false,
       }),
     eq: (column: string, value: unknown) => where((row) => row[column] === value),
-    gt: (column: string, value: unknown) => where((row) => compare(row[column], value) > 0),
-    gte: (column: string, value: unknown) => where((row) => compare(row[column], value) >= 0),
-    lte: (column: string, value: unknown) => where((row) => compare(row[column], value) <= 0),
+    // Como en Postgres, una comparación con NULL nunca es cierta.
+    gt: (column: string, value: unknown) => where((row) => row[column] != null && compare(row[column], value) > 0),
+    gte: (column: string, value: unknown) => where((row) => row[column] != null && compare(row[column], value) >= 0),
+    lte: (column: string, value: unknown) => where((row) => row[column] != null && compare(row[column], value) <= 0),
     in: (column: string, values: unknown[]) => where((row) => values.includes(row[column])),
     ilike: (column: string, pattern: string) => where(ilike(column, pattern)),
     or: (conditions: string) => where(orFilter(conditions)),

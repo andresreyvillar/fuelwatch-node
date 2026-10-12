@@ -127,6 +127,47 @@ export async function getStats(location: string): Promise<Stats | null>
 
 ---
 
+### getProvinceStats(province)
+
+```typescript
+export async function getProvinceStats(province: string): Promise<Stats | null>
+```
+
+Igual que `getStats()` pero filtrando `.eq('provincia', province)` en lugar de `getSearchConditions()`.
+
+---
+
+### searchStationsByProvince(province, fuel, page, limit)
+
+```typescript
+export async function searchStationsByProvince(province: string, fuel: ProvinceSortFuel, page = 1, limit = 20)
+```
+
+`PROVINCE_SORT_COLUMNS = { diesel: 'precio_diesel', gas95: 'precio_gasolina_95' }` (en `lib/provinces.ts`, compartido con FuelApp).
+
+```
+FROM servicestations
+SELECT * (count: 'exact')
+WHERE provincia = {province} AND {columna} > 0
+ORDER BY {columna} ASC, id_ss ASC
+RANGE skip .. skip + limit - 1
+```
+
+Adjunta tendencias con `attachTrends()` y devuelve `{ data, meta: { total, page, lastPage } }` como `searchStations()`.
+
+---
+
+### getSuggestions(query)
+
+```typescript
+export type Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string };
+export async function getSuggestions(query: string): Promise<Suggestion[]>
+```
+
+Con menos de 2 caracteres (sin contar espacios de los extremos) devuelve `[]`. Si no, devuelve `matchProvinces(query)` (de `lib/provinces.ts`) como `tipo: 'provincia'` seguidas de `findLocalities(query)` como `tipo: 'localidad'`. `findLocalities()` es la logica de localidades descrita en `specs/api/suggestions.md`.
+
+---
+
 ## Funciones Internas
 
 ### checkSupabase()

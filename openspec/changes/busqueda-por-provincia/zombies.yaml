@@ -1,36 +1,54 @@
 # Pruebas zombi de busqueda-por-provincia: al menos una por escenario del slice.
 # Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
 # EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
-# find/replace se completan en la implementación (tasks 2.4): el código aún no existe.
 
 - scenario: sugerencias-incluyen-provincia
   file: frontend_astro/src/lib/fuel.ts
+  find: "    ...matchProvinces(query).map((nombre): Suggestion => ({ tipo: 'provincia', nombre })),\n"
+  replace: ""
+  expect: [sugerencias-incluyen-provincia, sugerencia-provincia-sin-tildes-ni-articulo]
   why: "si getSuggestions() deja de añadir las provincias que coinciden, solo se sugieren localidades"
 
 - scenario: sugerencia-provincia-sin-tildes-ni-articulo
   file: frontend_astro/src/lib/provinces.ts
+  find: ".replace(/\\p{M}/gu, '')"
+  replace: ""
   why: "si la normalización deja de quitar las tildes, «malaga» ya no encuentra «MÁLAGA»"
 
 - scenario: provincia-ordenada-por-precio
   file: frontend_astro/src/lib/fuel.ts
+  find: ".order('id_ss', { ascending: true })"
+  replace: ".order('id_ss', { ascending: false })"
   why: "si se quita el desempate por id, el orden a igual precio deja de ser estable y la paginación puede repetir o saltar estaciones"
 
 - scenario: provincia-ordenada-por-gasolina-95
-  file: frontend_astro/src/lib/fuel.ts
+  file: frontend_astro/src/lib/provinces.ts
+  find: "gas95: 'precio_gasolina_95' } as const"
+  replace: "gas95: 'precio_diesel' } as const"
+  expect: [provincia-ordenada-por-gasolina-95, provincia-excluye-sin-carburante]
   why: "si gas95 se asocia a la columna de Gasóleo A, la búsqueda por Gasolina 95 sale ordenada por diésel"
 
 - scenario: provincia-excluye-sin-carburante
   file: frontend_astro/src/lib/fuel.ts
+  find: ".gt(priceColumn, 0)"
+  replace: ""
+  expect: [provincia-excluye-sin-carburante, provincia-ordenada-por-precio, provincia-ordenada-por-gasolina-95]
   why: "si se quita el filtro de precio > 0, las estaciones sin ese carburante salen primero (precio 0) y cuentan en el total"
 
 - scenario: provincia-carburante-no-valido
   file: frontend_astro/src/pages/api/search.ts
+  find: "fuel !== null && PROVINCE_SORT_FUELS.includes(fuel)"
+  replace: "true"
   why: "si un carburante no admitido se trata como diésel en vez de rechazarse, no responde 400"
 
 - scenario: estadistica-de-provincia
   file: frontend_astro/src/lib/fuel.ts
+  find: "precio_gasolina_98').eq('provincia', province);"
+  replace: "precio_gasolina_98').ilike('localidad', `%${province}%`);"
   why: "si la estadística de provincia filtra por localidad en vez de por provincia, mezcla localidades de otras provincias"
 
 - scenario: orden-provincia-segun-filtros
   file: frontend_astro/src/lib/provinces.ts
+  find: "return activeFilters.includes('diesel') ? 'diesel' : 'gas95';"
+  replace: "return activeFilters.includes('gasolina') ? 'gas95' : 'diesel';"
   why: "si con los dos filtros activos manda la Gasolina 95, la app pide un orden distinto al decidido"

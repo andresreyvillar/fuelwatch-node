@@ -14,7 +14,8 @@ Componente React principal de la aplicacion. Gestiona todo el estado global, efe
 | `stats` | `any` | `null` | Stats min/max/avg de la busqueda actual |
 | `search` | `string` | `""` | Texto del input de busqueda |
 | `debouncedSearch` | `string` | `""` | Busqueda con debounce de 1000ms |
-| `suggestions` | `string[]` | `[]` | Sugerencias de autocompletado |
+| `suggestions` | `Suggestion[]` | `[]` | Sugerencias de autocompletado (`{ tipo: 'localidad' \| 'provincia', nombre }`) |
+| `selectedProvince` | `string \| null` | `null` | Provincia elegida en las sugerencias; `null` = busqueda por localidad |
 | `activeFilters` | `string[]` | `['diesel', 'gasolina']` | Filtros de combustible activos |
 | `sortBy` | `string` | `'price_asc'` | Criterio de ordenacion |
 | `loading` | `boolean` | `false` | Indicador de carga |
@@ -29,6 +30,8 @@ Componente React principal de la aplicacion. Gestiona todo el estado global, efe
 | `isBrowser` | `boolean` | `false` | Flag para evitar SSR issues con localStorage |
 | `theme` | `'light' \| 'dark'` | `'light'` | Tema actual |
 | `isSearchFocused` | `boolean` | `false` | Si el input de busqueda tiene focus |
+
+Valor derivado: `sortFuel = provinceSortFuel(activeFilters)` (`lib/provinces.ts`): `'diesel'` si el filtro Diesel esta activo, si no `'gas95'`.
 
 ### Refs
 
@@ -92,13 +95,14 @@ if (isBrowser) {
 
 Cada uno guarda en localStorage cuando cambia (solo si `isBrowser`):
 - `[debouncedSearch]` -> `fuelwatch_last_search`
+- `[selectedProvince]` -> `fuelwatch_last_province` (se borra si es `null`). Al montar, si coincide con `fuelwatch_last_search`, se restaura el modo provincia
 - `[activeFilters]` -> `fuelwatch_active_filters` (JSON)
 - `[selectedBrands]` -> `fuelwatch_selected_brands` (JSON)
 - `[sortBy]` -> `fuelwatch_sort_by`
 
-### 6. Fetch de datos - `[debouncedSearch]`
+### 6. Fetch de datos - `[debouncedSearch, selectedProvince, sortFuel en modo provincia]`
 
-Cuando cambia `debouncedSearch`, llama `fetchData(true)` (reset page).
+Cuando cambia alguno, llama `fetchData(true)` (reset page).
 
 ## Funciones
 
@@ -123,12 +127,24 @@ Ejecuta busqueda inmediata (sin esperar debounce). En mobile, cierra sidebar.
 
 1. Si `!debouncedSearch`, return
 2. Fetch paralelo: `/api/search` + `/api/stats`
+   - Modo localidad: `?target={debouncedSearch}` y `?location={debouncedSearch}`
+   - Modo provincia: `?province={selectedProvince}&fuel={sortFuel}` y `?province={selectedProvince}`
 3. Si `resetPage`:
    - Reemplaza estaciones, resetea a page 2
    - Actualiza `tempPriceRange` basado en stats (min*0.9, max*1.1)
 4. Si no resetPage (load more):
    - Concatena estaciones, incrementa page
 5. Actualiza `stats`, `totalCount`, `hasMore`
+
+### changeSearch(text)
+
+Setter del input que recibe FilterForm. Si `text` no esta vacio, sale del modo provincia (`selectedProvince = null`). Vaciar el input al enfocarlo no cambia el modo.
+
+### selectSuggestion(s)
+
+- `tipo: 'provincia'`: `search` y `debouncedSearch` = nombre, `selectedProvince` = nombre; en mobile cierra el sidebar.
+- `tipo: 'localidad'`: `search` = nombre, `selectedProvince = null`, `handleSubmitSearch()`.
+- En ambos casos limpia sugerencias y quita el focus.
 
 ### togglePin(station)
 
@@ -159,7 +175,7 @@ Set unico de `rotulo` de todas las estaciones (search + pinned), ordenado A-Z.
 4. Ordena segun `sortBy`:
    - `brand_asc`: `localeCompare` por rotulo
    - `cp_asc`: `localeCompare` por codigo postal
-   - `price_asc` / `price_desc`: por precio minimo de filtros activos
+   - `price_asc` / `price_desc`: por precio minimo de filtros activos; en modo provincia, por el precio de `sortFuel` (el mismo carburante que ordena el servidor)
 
 ## Renderizado
 
@@ -210,6 +226,8 @@ Ver spec dedicada: [filter-form.md](./filter-form.md)
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
 import StationCard from './StationCard';
+import { provinceSortFuel } from '../lib/provinces';
+import type { Suggestion } from '../lib/fuel';
 ```
 
 ## localStorage Keys
@@ -217,7 +235,8 @@ import StationCard from './StationCard';
 | Key | Formato | Contenido |
 |-----|---------|-----------|
 | `fuelwatch_pins` | JSON array | Array de IDs numericos `[1234, 5678]` |
-| `fuelwatch_last_search` | string | Nombre de localidad `"Madrid"` |
+| `fuelwatch_last_search` | string | Nombre de localidad `"Madrid"` (o de provincia) |
+| `fuelwatch_last_province` | string | Provincia de la ultima busqueda `"PONTEVEDRA"` (solo en modo provincia) |
 | `fuelwatch_active_filters` | JSON array | `["diesel", "gasolina"]` |
 | `fuelwatch_selected_brands` | JSON array | `["REPSOL", "CEPSA"]` |
 | `fuelwatch_sort_by` | string | `"price_asc"` |

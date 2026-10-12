@@ -10,3 +10,47 @@
     red: pass
   notas: rojo impuesto 8/8, verificado por aserción; regresión 3/3; esqueleto provinces.ts que lanza not
     implemented para que tsc compile
+- run: 2026-10-12T06:40:18.404Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 8/8; verde 8/8; regresión 3/3; smoke contra Supabase real (sugerencias, búsqueda diésel/95,
+    400, stats provincia, localidad intacta); build OK; UI sin test automático
+  zombis:
+    sembrados: 8
+    cazados: 8
+- run: 2026-10-12T06:41:19.420Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "clean-code-typescript: PROVINCE_SORT_COLUMNS deduplicado en provinces.ts; frontend-core: sugerencia
+    como button (antes div con onClick). Deuda previa sin tocar: FuelApp >100 líneas, props any"
+- run: 2026-10-12T06:48:00.877Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  rondas: 2
+  notas: "ronda 2 tras refutación de sugerencias-incluyen-provincia («coruña (a)» → 500 real): .or() con valores
+    entre comillas (quoteFilterValue), falso alineado con PostgREST; lección
+    falso-supabase-tan-estricto-como-postgrest"
+  zombis:
+    sembrados: 8
+    cazados: 8
+- run: 2026-10-12T06:48:00.952Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  rondas: 2
+  notas: "tracer sin huecos; verifier A (búsqueda/stats) no refuta; verifier B refutó sugerencias con paréntesis
+    → corregido y re-verificado sin refutación; security pass: S2 (comas en .or() de sugerencias) y S3 en
+    sugerencias cerrados con el entrecomillado; abiertos bajos: S1 page/limit sin cota (también en target),
+    getSearchConditions con \\(, error.message en 500, stats de provincia sin paginar (>1000 filas)"

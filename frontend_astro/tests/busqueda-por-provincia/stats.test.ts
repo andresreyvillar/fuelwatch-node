@@ -39,7 +39,7 @@ beforeEach(() => {
 
 describe('GET /api/stats?province= — estadística de zona de una provincia', () => {
   /** @scenarios estadistica-de-provincia */
-  test.fails('estadistica-de-provincia: usa todas las estaciones de la provincia y solo ellas', async () => {
+  test('estadistica-de-provincia: usa todas las estaciones de la provincia y solo ellas', async () => {
     const { status, body } = await requestStats({ province: 'PONTEVEDRA' });
 
     expect(status).toBe(200);

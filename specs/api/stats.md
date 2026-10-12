@@ -13,8 +13,11 @@ GET /api/stats
 | Param | Tipo | Default | Descripcion |
 |-------|------|---------|-------------|
 | `location` | string | `""` | Localidad para calcular estadisticas |
+| `province` | string | - | Provincia exacta; si viene, se usa en lugar de `location` |
 
 ## Logica
+
+Con `province`: llama a `getProvinceStats(province)`, que consulta `servicestations` con `.eq('provincia', province)` y aplica las mismas reglas (pasos 4-7). Sin `province`:
 
 1. Llama a `getStats(location)` de `fuel.ts`
 2. Construye condiciones de busqueda con `getSearchConditions(location)`
@@ -79,3 +82,4 @@ clamped entre 5% y 95%
 ## Dependencias
 
 - `getStats()` de `lib/fuel.ts`
+- `getProvinceStats()` de `lib/fuel.ts`

@@ -28,7 +28,7 @@ beforeEach(() => {
 
 describe('GET /api/suggestions — sugerencias de localidades y provincias', () => {
   /** @scenarios sugerencias-incluyen-provincia */
-  test.fails('sugerencias-incluyen-provincia: devuelve las localidades y la provincia que coinciden, con su tipo', async () => {
+  test('sugerencias-incluyen-provincia: devuelve las localidades y la provincia que coinciden, con su tipo', async () => {
     const { status, body } = await requestSuggestions('ponte');
 
     expect(status).toBe(200);
@@ -42,8 +42,19 @@ describe('GET /api/suggestions — sugerencias de localidades y provincias', () 
     expect(body).toHaveLength(3);
   });
 
+  /** @scenarios sugerencias-incluyen-provincia */
+  test('sugerencias-incluyen-provincia: un nombre con paréntesis («coruña (a)») sugiere la provincia y la localidad', async () => {
+    const { status, body } = await requestSuggestions('coruña (a)');
+
+    expect(status).toBe(200);
+    expect(body).toEqual([
+      { tipo: 'provincia', nombre: 'CORUÑA (A)' },
+      { tipo: 'localidad', nombre: 'CORUÑA (A)' },
+    ]);
+  });
+
   /** @scenarios sugerencia-provincia-sin-tildes-ni-articulo */
-  test.fails('sugerencia-provincia-sin-tildes-ni-articulo: encuentra MÁLAGA, CORUÑA (A) y PALMAS (LAS)', async () => {
+  test('sugerencia-provincia-sin-tildes-ni-articulo: encuentra MÁLAGA, CORUÑA (A) y PALMAS (LAS)', async () => {
     const malaga = await requestSuggestions('malaga');
     const coruna = await requestSuggestions('a coruna');
     const palmas = await requestSuggestions('las palmas');
@@ -54,10 +65,27 @@ describe('GET /api/suggestions — sugerencias de localidades y provincias', () 
   });
 });
 
+// Hallazgo de seguridad cerrado en la verificación (S2): el texto del usuario va entre comillas en el filtro.
+describe('GET /api/suggestions — el texto es un literal', () => {
+  test('el texto no puede añadir condiciones al filtro de localidades', async () => {
+    const { status, body } = await requestSuggestions('zzqq,provincia.ilike.PONTEVEDRA');
+
+    expect(status).toBe(200);
+    expect(body).toEqual([]);
+  });
+});
+
 // Comportamiento que el slice conserva (ya se cumplía antes): regresión, fuera del semáforo.
 describe('GET /api/suggestions — comportamiento que se conserva', () => {
   test('con menos de 2 caracteres no sugiere nada', async () => {
     const { status, body } = await requestSuggestions('p');
+
+    expect(status).toBe(200);
+    expect(body).toEqual([]);
+  });
+
+  test('un texto de solo espacios no sugiere nada', async () => {
+    const { status, body } = await requestSuggestions('   ');
 
     expect(status).toBe(200);
     expect(body).toEqual([]);

@@ -12,3 +12,17 @@
         resuelto con el commit base 70c6d3b
       change: estadistica-zona-4-carburantes
   promovida: true
+- id: falso-supabase-tan-estricto-como-postgrest
+  cuando: Al escribir o ampliar un doble de Supabase/PostgREST para tests de endpoints
+  regla: El falso de Supabase DEBE rechazar lo que PostgREST rechaza (en .or(), valores con caracteres reservados sin
+    comillas) y el texto del usuario en .or() DEBE ir entre comillas con quoteFilterValue(), porque un doble más
+    permisivo que el servidor deja en verde consultas que fallan en producción
+  nivel: mecanico
+  donde: frontend_astro/tests/support/fake-supabase.ts (parseOrValue) + PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-12
+      nota: "busqueda-por-provincia: el verificador adversarial refutó sugerencias-incluyen-provincia con «coruña (a)» → 500
+        real (LIKE pattern must not end with escape character) mientras los tests pasaban con el falso"
+      change: busqueda-por-provincia
+  promovida: true

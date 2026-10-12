@@ -22,8 +22,8 @@ interface FilterFormProps {
   availableBrands: string[];
   tempPriceRange: { min: number; max: number };
   setPriceTempRange: (v: any) => void;
-  suggestions: string[];
-  onSelectSuggestion: (s: string) => void;
+  suggestions: Suggestion[];    // { tipo: 'localidad' | 'provincia'; nombre: string }
+  onSelectSuggestion: (s: Suggestion) => void;
   isSearchFocused: boolean;
   setIsSearchFocused: (v: boolean) => void;
   sortBy: string;
@@ -44,14 +44,17 @@ div
 ├── Input container (relative)
 │   ├── Search icon (absolute left)
 │   ├── Input text
-│   │   placeholder: "Ciudad o CP..."
+│   │   placeholder: "Ciudad, provincia o CP..."
 │   │   onFocus: setIsSearchFocused(true) + clear search
 │   │   onBlur: setTimeout(() => setIsSearchFocused(false), 200)
 │   │   onKeyDown Enter: onSearchSubmit()
 │   │   classes: rounded-2xl py-3.5 pl-11 pr-4 focus:ring-2 focus:ring-primary
 │   └── Suggestions dropdown (si focused && suggestions.length > 0)
 │       div.absolute.z-[70].w-full.mt-2.rounded-2xl
-│       └── {suggestions.map -> div.px-4.py-3 onClick: onSelectSuggestion}
+│       └── {suggestions.map -> button[type=button].flex.w-full.items-center.justify-between.px-4.py-3.text-left onClick: onSelectSuggestion(s)}
+│           key: `${s.tipo}-${s.nombre}`
+│           ├── span: s.nombre
+│           └── si tipo === 'provincia': span "PROVINCIA" (text-[10px] font-black uppercase tracking-widest text-primary)
 ```
 
 ### 2. Ordenar por

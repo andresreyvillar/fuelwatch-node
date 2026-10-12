@@ -16,18 +16,25 @@ GET /api/suggestions
 
 ## Logica
 
-1. Si `q.length < 2`, devuelve array vacio `[]`
-2. Escapa parentesis en el query: `(` -> `\(`, `)` -> `\)`
-3. Construye condiciones OR:
-   - Siempre: `localidad.ilike.%{safeQuery}%`
+El endpoint delega en `getSuggestions(q)` de `lib/fuel.ts`, que devuelve primero las provincias que coinciden y despues las localidades.
+
+### Provincias
+
+`matchProvinces(q)` de `lib/provinces.ts` filtra la lista fija `PROVINCES` (las 52 provincias con la grafia de la columna `provincia`: `CORUÑA (A)`, `MÁLAGA`, `VALENCIA / VALÈNCIA`...). Compara sin tildes (`normalize('NFD')` + quitar marcas) y sin mayusculas, contra el nombre y contra la variante con el articulo delante (`CORUÑA (A)` -> `A CORUÑA`). No consulta la base de datos.
+
+### Localidades (`findLocalities(q)`)
+
+1. Si `q.trim().length < 2`, devuelve array vacio `[]`
+2. Construye condiciones OR con el valor entre comillas (`quoteFilterValue()`):
+   - Siempre: `localidad.ilike."%{q}%"`
    - Si el query empieza con un articulo espanol, agrega variante con formato DB
-4. Query a `servicestations`:
+3. Query a `servicestations`:
    - Campo: `localidad` solamente
    - Filtro: `.or(conditions)`
    - Limite: 100 resultados
-5. Extrae localidades unicas con `Set`
-6. Ordena alfabeticamente
-7. Devuelve las primeras 10
+4. Extrae localidades unicas con `Set`
+5. Ordena alfabeticamente
+6. Devuelve las primeras 10
 
 ### Articulos espanoles
 
@@ -37,22 +44,28 @@ const articles = ['A ', 'O ', 'LA ', 'EL ', 'LOS ', 'LAS ', 'AS ', 'OS '];
 
 Si el query empieza con un articulo (ej: "LA CORUNA"), genera una condicion adicional buscando el formato almacenado en la DB: `localidad.ilike.%CORUNA%LA%` (las localidades se almacenan como "CORUNA (LA)" en la base de datos).
 
-### Escape de parentesis
+### Valores entre comillas
 
-Los parentesis en el query deben escaparse porque Supabase `.or()` los usa como delimitadores:
+En `.or()` las comas, los puntos y los parentesis son delimitadores de PostgREST. El texto del usuario va siempre entre comillas dobles, escapando solo `"` y `\`; asi "CORUÑA (A)" funciona y el texto no puede añadir condiciones al filtro:
 ```typescript
-const safeQuery = query.replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+const quoteFilterValue = (value: string) => `"${value.replace(/["\\]/g, '\\$&')}"`;
 ```
+(El escape con barra invertida `\(` hacia fallar la consulta: "LIKE pattern must not end with escape character".)
 
 ## Respuesta exitosa (200)
 
 ```json
-["MADRID", "MADRIGUERAS", "MADRIDEJOS"]
+[
+  { "tipo": "provincia", "nombre": "MADRID" },
+  { "tipo": "localidad", "nombre": "MADRID" },
+  { "tipo": "localidad", "nombre": "MADRIDEJOS" },
+  { "tipo": "localidad", "nombre": "MADRIGUERAS" }
+]
 ```
 
 ## Query corto (200)
 
-Si `q.length < 2`:
+Si `q.trim().length < 2`:
 ```json
 []
 ```
@@ -65,4 +78,5 @@ Si `q.length < 2`:
 
 ## Dependencias
 
-- `supabase` directamente de `lib/supabase.ts` (no usa fuel.ts)
+- `getSuggestions()` de `lib/fuel.ts`
+- `matchProvinces()` de `lib/provinces.ts` (via fuel.ts)
