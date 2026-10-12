@@ -61,8 +61,8 @@ verified-by:
   - frontend_astro/tests/ruta-gasolineras/route-stations.test.ts::ruta-servicio-no-disponible
 
 ### Requirement: Orden de la lista de la ruta
-La app DEBE permitir ordenar las gasolineras de la ruta por km de ruta (por defecto) o por precio del carburante
-elegido, de menor a mayor; a igual precio, primero la que antes se encuentra en la ruta.
+La app DEBE permitir ordenar las gasolineras de la ruta por precio del carburante elegido (por defecto), de menor a
+mayor y, a igual precio, primero la que antes se encuentra en la ruta; o por km de ruta.
 
 #### Scenario: ruta-ordenada-por-precio
 **WHEN** el conductor elige ordenar la lista de la ruta por precio

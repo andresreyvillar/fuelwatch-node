@@ -105,3 +105,8 @@
 {"ts":"2026-10-12T13:35:38.799Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":3068}
 {"ts":"2026-10-12T13:35:49.494Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"usage","model":"claude-opus-5-5","source":"principal","session":"e1dd4182-5439-48e8-a83b-a581c2bd5885","input":20,"output":8557,"cacheRead":7411868,"cacheWrite":10358,"messages":10}
 {"ts":"2026-10-12T13:35:49.496Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"usage","model":"claude-sonnet-5-5","source":"subagente","session":"e1dd4182-5439-48e8-a83b-a581c2bd5885","input":2,"output":20,"cacheRead":13420,"cacheWrite":20140,"messages":1}
+{"ts":"2026-10-12T13:35:52.800Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"command","cmd":"gates","args":["merge","--change","ruta-orden-precio-por-defecto"]}
+{"ts":"2026-10-12T13:35:52.827Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"gate-start","gate":"no-pending","phase":"merge","type":"builtin","description":"ningún test del slice con marcador de rojo o pendiente"}
+{"ts":"2026-10-12T13:35:52.828Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"gate-end","gate":"no-pending","phase":"merge","type":"builtin","status":"skip","ms":1,"details":"omitido por nivel trivial"}
+{"ts":"2026-10-12T13:35:52.828Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"command-end","cmd":"gates","code":0,"ms":27}
+{"ts":"2026-10-12T13:35:54.674Z","change":"ruta-orden-precio-por-defecto","slice":null,"kind":"archive","to":"openspec/changes/archive/2026-10-12-ruta-orden-precio-por-defecto"}
