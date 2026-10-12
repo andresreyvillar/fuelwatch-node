@@ -1,0 +1,32 @@
+# Pruebas zombi de ruta-gasolineras: al menos una por escenario del slice.
+# Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
+# EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
+# find/replace se completan en la implementación (tasks 2.4): el código aún no existe.
+
+- scenario: ruta-gasolineras-en-el-corredor
+  file: frontend_astro/src/lib/route.ts
+  why: "si el filtro compara con el doble del desvío, entran estaciones más lejanas que el radio"
+
+- scenario: ruta-ordenada-por-km
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si se ordena por id o por precio en vez de por km de ruta, la lista deja de seguir el viaje"
+
+- scenario: ruta-mas-barata-por-tramo
+  file: frontend_astro/src/lib/route.ts
+  why: "si el tramo se calcula con 50 km en vez de 100, se marcan más estaciones de la cuenta"
+
+- scenario: ruta-sin-precio-excluida
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si se quita el filtro de precio > 0, las estaciones sin ese carburante aparecen en la ruta"
+
+- scenario: ruta-parametros-no-validos
+  file: frontend_astro/src/pages/api/route-stations.ts
+  why: "si no se comprueba el rango de latitud, una coordenada imposible llega a OSRM"
+
+- scenario: ruta-sin-ruta
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si NoRoute de OSRM se trata como fallo del servicio, responde 502 en vez de 404"
+
+- scenario: ruta-servicio-no-disponible
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si un error de red de OSRM no se captura como RoutingUnavailable, responde 500"

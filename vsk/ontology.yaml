@@ -361,5 +361,60 @@ elementos:
           las columnas a double precision con índice,
         slice: coordenadas-numericas,
         relaciones: { relaciona: [ sincronizacion, estacion-de-servicio ] }
+      },
+    {
+        id: planificar-repostaje-en-ruta,
+        tipo: JobStory,
+        nombre: Planificar el repostaje en una ruta,
+        atributos:
+          {
+            cuando: voy a hacer un viaje por carretera,
+            quiero: "ver las gasolineras cerca de mi ruta en el orden en que me las encuentro, con su precio",
+            para: decidir dónde parar a repostar al mejor precio sin desviarme
+          },
+        relaciones: { perteneceA: [ buscar-donde-repostar ], relaciona: [ estacion-de-servicio, precio, carburante ] }
+      },
+    {
+        id: ruta,
+        tipo: Termino,
+        nombre: Ruta,
+        descripcion: Camino por carretera entre un origen y un destino (OSRM); se mide en km desde el origen,
+        atributos: { noConfundirCon: Localidad },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: corredor,
+        tipo: Termino,
+        nombre: Corredor,
+        descripcion: "Franja a ambos lados de la ruta de anchura igual al desvío máximo (1, 2, 5 o 10 km, en línea recta)",
+        atributos: { noConfundirCon: Ruta },
+        relaciones: { perteneceA: [ precios-carburante ] }
+      },
+    {
+        id: repostar-en-ruta,
+        tipo: EscenarioFuncional,
+        nombre: Repostar en ruta,
+        descripcion: "El conductor elige origen, destino y desvío y ve las gasolineras del corredor por km de ruta, con la más
+          barata de cada tramo de 100 km marcada",
+        clase: feliz,
+        relaciones: { especifica: [ planificar-repostaje-en-ruta ] }
+      },
+    {
+        id: ruta-no-disponible,
+        tipo: EscenarioFuncional,
+        nombre: Ruta no disponible,
+        descripcion: "No hay ruta por carretera entre los puntos o el servicio de rutas falla: la app lo explica y no muestra
+          estaciones",
+        clase: error,
+        relaciones: { especifica: [ planificar-repostaje-en-ruta ] }
+      },
+    {
+        id: ruta-gasolineras-corredor,
+        tipo: Slice,
+        nombre: Gasolineras en el corredor de una ruta,
+        descripcion: "GET /api/route-stations: ruta OSRM, estaciones con precio del carburante a ≤ desvío de la ruta, por km de
+          ruta, con la más barata de cada tramo de 100 km",
+        slice: ruta-gasolineras,
+        relaciones: { relaciona: [ ruta, corredor, estacion-de-servicio, precio ] }
       }
   ]

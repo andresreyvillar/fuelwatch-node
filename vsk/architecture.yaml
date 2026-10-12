@@ -16,6 +16,9 @@ components:
   - { id: fuel-service, name: Servicio de carburantes, layer: Dominio,
       paths: ["frontend_astro/src/lib/fuel.ts"],
       description: "Búsqueda (artículos españoles), tendencias, estadísticas y sync desde la API" }
+  - { id: route-service, name: Geometría de rutas, layer: Dominio,
+      paths: ["frontend_astro/src/lib/route.ts"],
+      description: "Corredor de una ruta: distancias, tramos, km de ruta y la más barata por tramo (slice ruta-gasolineras)" }
   - { id: sync-script, name: Script de sincronización, layer: Dominio,
       paths: ["scripts/**"],
       description: "sync-prices.mjs: misma lógica de sync que fuel-service, ejecutada fuera de Cloudflare" }
@@ -30,6 +33,12 @@ components:
   # Salida / sistemas de fuera
   - { id: ministry-api, name: API del Ministerio, layer: Salida, external: true,
       description: "energia.serviciosmin.gob.es — precios de estaciones terrestres" }
+  - { id: osrm, name: OSRM (rutas), layer: Salida, external: true,
+      description: "router.project-osrm.org — ruta por carretera; la llama el servidor" }
+  - { id: photon, name: Photon (geocodificación), layer: Salida, external: true,
+      description: "photon.komoot.io — autocompletado de origen y destino; lo llama el navegador" }
+  - { id: osm-tiles, name: Teselas OpenStreetMap, layer: Salida, external: true,
+      description: "Mapa base de Leaflet en la pestaña Ruta" }
   - { id: cloudflare, name: Cloudflare Pages, layer: Salida, external: true,
       description: "Hosting SSR del frontend" }
 
@@ -44,3 +53,7 @@ edges:
   - [sync-script, supabase]
   - [cloudflare, ui]
   - [cloudflare, api]
+  - [fuel-service, route-service]
+  - [fuel-service, osrm]
+  - [ui, photon]
+  - [ui, osm-tiles]
