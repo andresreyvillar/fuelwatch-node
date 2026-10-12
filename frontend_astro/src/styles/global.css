@@ -138,3 +138,18 @@ body {
 .astro-dark .seo-faq details p {
   color: #9ca3af;
 }
+
+/* Mapa de la pestaña Ruta (RouteMap): CSS gana a los atributos que pone Leaflet en el SVG. */
+.route-line {
+  stroke: var(--color-primary);
+}
+
+.route-station {
+  stroke: var(--color-secondary);
+  fill: var(--color-secondary);
+}
+
+.route-station-cheapest {
+  stroke: #16a34a;
+  fill: #16a34a;
+}

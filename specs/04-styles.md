@@ -73,6 +73,17 @@ Uso en componentes:
 | Gasolina 95 | `#f59e0b` (amber-500) | 3px |
 | Gasolina 98 | `#b45309` (amber-700) | 2px |
 
+### Colores del mapa de ruta (RouteMap)
+
+Leaflet pinta la ruta y las estaciones en SVG; los colores van por clase en `global.css` (CSS gana a los
+atributos que pone Leaflet):
+
+| Clase | Elemento | Color |
+|-------|----------|-------|
+| `.route-line` | Polyline de la ruta | `stroke: var(--color-primary)` |
+| `.route-station` | CircleMarker de estacion | `stroke`/`fill: var(--color-secondary)` |
+| `.route-station-cheapest` | CircleMarker de la mas barata del tramo | `stroke`/`fill: #16a34a` (verde, como `text-green-600`) |
+
 ### Animacion
 
 ```css

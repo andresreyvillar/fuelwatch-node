@@ -13,7 +13,7 @@ events:
 specs:
   - ruta
 tests_root: frontend_astro/tests/ruta-gasolineras
-blocked: "migración supabase/coordenadas-numericas.sql pendiente (la ejecuta el humano)"
+blocked: null
 ---
 
 # El conductor ve las gasolineras que quedan cerca de su ruta, en el orden en que se las encuentra
@@ -58,15 +58,15 @@ stations: [{ …estación, kmRuta, desvioKm, masBarataDelTramo }] }`.
 **THEN** no aparece en la respuesta
 
 ### ruta-parametros-no-validos
-**WHEN** falta el origen o el destino, no son coordenadas, el desvío no es 1, 2, 5 o 10, o el carburante no es `diesel` ni `gas95`
+**WHEN** falta el origen o el destino, no son coordenadas decimales dentro de España (con Canarias, Ceuta y Melilla), el desvío no es exactamente 1, 2, 5 o 10, o el carburante no es `diesel` ni `gas95`
 **THEN** responde 400 con `{ "error": "Invalid <parámetro>" }` (`from`, `to`, `radius` o `fuel`)
 
 ### ruta-sin-ruta
-**WHEN** el servicio de rutas no encuentra ruta por carretera entre los dos puntos
+**WHEN** el servicio de rutas no encuentra ruta por carretera entre los dos puntos: no hay ruta, tiene que mover algún extremo más de 5 km para llegar a una carretera, la ruta incluye un tramo en ferry o supera 1.600 km
 **THEN** responde 404 con `{ "error": "No route" }`
 
 ### ruta-servicio-no-disponible
-**WHEN** el servicio de rutas no responde o responde con error
+**WHEN** el servicio de rutas no responde en 10 s, responde con error o sin geometría
 **THEN** responde 502 con `{ "error": "Routing unavailable" }`
 
 ## Estado después
@@ -78,6 +78,11 @@ Nada cambia en los datos: son lecturas. La app tiene una pestaña «Ruta» con m
 - Una estación cerca de dos puntos de la ruta (la ruta pasa dos veces cerca) aparece una vez, en el km más
   cercano a la ruta.
 - Estaciones con coordenadas nulas o erróneas (`0,0`, invertidas) no caen en ninguna caja: no aparecen.
+- Ceuta y Melilla: OSRM no tiene sus carreteras enlazadas con la península (mueve el punto más de 20 km), así que
+  sus rutas dan 404. Limitación conocida del servicio, aceptada por el humano.
+- Islas: las rutas con ferry (p. ej. Palma → Madrid) dan 404 por decisión del humano.
+- La caja de validación es un rectángulo que también incluye Portugal, el sur de Francia y el norte de África;
+  el tope de 1.600 km acota el uso (riesgo bajo aceptado por el humano).
 - La interfaz (pestaña, autocompletado, mapa, selector y lista) no tiene test automático: no hay jsdom ni
   Playwright. Se comprueba a mano con `npm run dev` antes de cerrar.
 

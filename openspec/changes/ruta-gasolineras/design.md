@@ -57,6 +57,13 @@ y lista por km de ruta
 
 ## Riesgos
 
+- **Coste por peticion (verificado):** la ruta solo se calcula entre puntos de Espana (400 fuera de la caja), cada
+  estacion se mide solo contra su tramo con la linea proyectada una vez, la respuesta se cachea una hora y OSRM
+  tiene un timeout de 10 s. Medido en local: 1-4 ms de CPU de calculo para Vigo → Madrid, ~18 ms en el peor caso
+  (Cadiz → Girona, 10 km). El plan gratuito de Workers limita la CPU a 10 ms por peticion: vigilar en produccion.
+- **OSRM engancha a la carretera mas cercana:** un destino sin carretera (Canarias desde la Peninsula) no da
+  `NoRoute` sino una ruta hasta otro sitio; se responde 404 si algun extremo se mueve mas de 5 km.
+
 - **OSRM público** (`router.project-osrm.org`) es un servidor de demostración con política de uso razonable y
   sin garantía de disponibilidad: si falla, el endpoint responde 502 y la pestaña lo explica. Cambiar a
   OpenRouteService (clave gratuita) sería un slice aparte.

@@ -34,6 +34,7 @@ Spec (se escribe/edita) --> Generador (Claude Code) --> Codigo fuente
 | [Stats](./api/stats.md) | `GET /api/stats` | Estadisticas min/max/avg por localidad |
 | [Suggestions](./api/suggestions.md) | `GET /api/suggestions` | Autocompletado de localidades |
 | [Update Prices](./api/update-prices.md) | `GET /api/update-prices` | Sincronizacion con API del Ministerio |
+| [Route Stations](./api/route-stations.md) | `GET /api/route-stations` | Gasolineras en el corredor de una ruta (OSRM) |
 
 ### Servicios (Logica de Negocio)
 | Spec | Descripcion |
@@ -41,6 +42,7 @@ Spec (se escribe/edita) --> Generador (Claude Code) --> Codigo fuente
 | [Supabase Client](./services/supabase-client.md) | Configuracion del cliente Supabase |
 | [Fuel Service](./services/fuel-service.md) | Funciones principales: search, trends, stats, sync |
 | [Search Conditions](./services/search-conditions.md) | Algoritmo de busqueda con articulos espanoles |
+| [Route](./services/route.md) | Geometria del corredor: distancias, tramos, km de ruta |
 
 ### Componentes UI
 | Spec | Descripcion |
@@ -50,6 +52,7 @@ Spec (se escribe/edita) --> Generador (Claude Code) --> Codigo fuente
 | [FilterForm](./components/filter-form.md) | Sidebar: busqueda, filtros, ordenacion, marcas |
 | [StationCard](./components/station-card.md) | Tarjeta de estacion: precios, tendencias, historial |
 | [PriceChart](./components/price-chart.md) | Grafico de evolucion de precios (Recharts) |
+| [RouteFinder](./components/route-finder.md) | Pestana Ruta: origen/destino (Photon), mapa (Leaflet) y lista por km |
 
 ### Flujos
 | Spec | Descripcion |

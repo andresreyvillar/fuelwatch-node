@@ -15,6 +15,7 @@ Componente React principal de la aplicacion. Gestiona todo el estado global, efe
 | `search` | `string` | `""` | Texto del input de busqueda |
 | `debouncedSearch` | `string` | `""` | Busqueda con debounce de 1000ms |
 | `suggestions` | `Suggestion[]` | `[]` | Sugerencias de autocompletado (`{ tipo: 'localidad' \| 'provincia', nombre }`) |
+| `view` | `'buscar' \| 'ruta'` | `'buscar'` | Pestana activa (no se persiste) |
 | `selectedProvince` | `string \| null` | `null` | Provincia elegida en las sugerencias; `null` = busqueda por localidad |
 | `activeFilters` | `string[]` | `['diesel', 'gasolina']` | Filtros de combustible activos |
 | `sortBy` | `string` | `'price_asc'` | Criterio de ordenacion |
@@ -197,6 +198,10 @@ div.h-screen.flex.flex-col.desk:flex-row
 │   │   ├── "FUEL WATCH"
 │   │   └── Theme toggle (desktop only)
 │   └── Scrollable content
+│       ├── Pestanas (role=tablist): "Buscar" | "Ruta" (estado `view`, por defecto 'buscar')
+│       ├── Si view === 'ruta': <Suspense><RouteFinder activeFilters pinnedIds onTogglePin /></Suspense>
+│       │   (RouteFinder con React.lazy: Leaflet solo se descarga al abrir la pestana)
+│       └── Si view === 'buscar': lo de siempre
 │       ├── Favoritos section (si hay)
 │       │   ├── Titulo "FAVORITOS"
 │       │   └── StationCard[] (pinned, sorted by price desc)

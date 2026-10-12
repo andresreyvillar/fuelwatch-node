@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { matchProvinces, PROVINCE_SORT_COLUMNS, type ProvinceSortFuel, type Suggestion } from './provinces';
+import { boxAround, cheapestPerSection, chunkRanges, cumulativeKm, decodePolyline6, locateInSpan, projectSpan, simplifyForDrawing, type LonLat } from './route';
 
 function checkSupabase() {
   if (!supabase) throw new Error('Supabase client not initialized. Check your environment variables.');
@@ -245,3 +246,90 @@ function getSearchConditions(query: string): string {
   return conditions.map(c => c.replace(/\(/g, '\\(').replace(/\)/g, '\\)')).join(',');
 }
 
+
+export class RouteNotFoundError extends Error {}
+export class RoutingUnavailableError extends Error {}
+
+const OSRM_ROUTE_URL = 'https://router.project-osrm.org/route/v1/driving';
+const ROUTE_STATION_COLUMNS = 'id_ss, rotulo, horario, direccion, provincia, localidad, cp, latitud, longitud, precio_diesel, precio_diesel_extra, precio_gasolina_95, precio_gasolina_98, fecha_actualizacion';
+
+// OSRM engancha cada extremo a la carretera más cercana, aunque esté a cientos de km (p. ej. Canarias → Portugal).
+const MAX_SNAP_METERS = 5000;
+const OSRM_TIMEOUT_MS = 10_000;
+// Ninguna ruta por carretera dentro de España llega (la más larga, ~1.500 km): por encima no es un viaje español.
+const MAX_ROUTE_METERS = 1_600_000;
+
+type OsrmRoute = { distance: number; duration: number; geometry: LonLat[] };
+type RouteStation = Record<string, unknown> & { id_ss: number; latitud: number; longitud: number; kmRuta: number; desvioKm: number };
+
+async function fetchRoute(from: LonLat, to: LonLat): Promise<OsrmRoute> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OSRM_TIMEOUT_MS);
+  let response: Response;
+  let body: any;
+  try {
+    // polyline6 + steps: geometría compacta y el modo de cada paso (para descartar ferris).
+    response = await fetch(`${OSRM_ROUTE_URL}/${from.join(',')};${to.join(',')}?overview=full&geometries=polyline6&steps=true`, { signal: controller.signal });
+    body = await response.json().catch(() => null);
+  } catch (error) {
+    throw new RoutingUnavailableError('Routing service unreachable', { cause: error });
+  } finally {
+    clearTimeout(timeout);
+  }
+  const snappedTooFar = body?.waypoints?.some((waypoint: { distance: number }) => waypoint.distance > MAX_SNAP_METERS);
+  if (body?.code === 'NoRoute' || body?.code === 'NoSegment' || snappedTooFar) throw new RouteNotFoundError('No route');
+  const route = body?.routes?.[0];
+  const geometry = typeof route?.geometry === 'string' ? decodePolyline6(route.geometry) : [];
+  if (!response.ok || body?.code !== 'Ok' || geometry.length < 2) {
+    throw new RoutingUnavailableError(`Routing service responded ${response.status}`);
+  }
+  // Decisión del humano: una ruta con barco no es «por carretera».
+  const usesFerry = route.legs?.some((leg: { steps?: { mode: string }[] }) => leg.steps?.some((step) => step.mode === 'ferry'));
+  if (usesFerry || route.distance > MAX_ROUTE_METERS) throw new RouteNotFoundError('No route');
+  return { distance: route.distance, duration: route.duration, geometry };
+}
+
+const roundTo2 = (value: number): number => Math.round(value * 100) / 100;
+
+export async function findStationsAlongRoute(from: LonLat, to: LonLat, radiusKm: number, fuel: ProvinceSortFuel) {
+  const route = await fetchRoute(from, to);
+  const line = route.geometry;
+  const cumKm = cumulativeKm(line);
+  const priceColumn = PROVINCE_SORT_COLUMNS[fuel];
+  const ranges = chunkRanges(cumKm);
+  const client = checkSupabase();
+
+  const stationsByChunk = await Promise.all(ranges.map(async ([start, end]) => {
+    const box = boxAround(line.slice(start, end + 1), radiusKm);
+    const { data, error } = await client.from('servicestations').select(ROUTE_STATION_COLUMNS)
+      .gte('latitud', box.minLat).lte('latitud', box.maxLat).gte('longitud', box.minLon).lte('longitud', box.maxLon)
+      .gt(priceColumn, 0);
+    if (error) throw error;
+    return (data ?? []) as unknown as RouteStation[];
+  }));
+
+  // Cada estación se mide solo contra el tramo de su caja: si está a ≤ radio de un segmento de otro tramo, también
+  // cae en la caja de ese tramo y se mide allí. Si aparece en varias cajas, se queda la posición más cercana.
+  const closestById = new Map<number, RouteStation>();
+  stationsByChunk.forEach((stations, chunk) => {
+    if (stations.length === 0) return;
+    const span = projectSpan(line, ranges[chunk][0], ranges[chunk][1]);
+    for (const station of stations) {
+      const position = locateInSpan([station.longitud, station.latitud], span, cumKm);
+      const previous = closestById.get(station.id_ss);
+      if (position.desvioKm <= radiusKm && (!previous || position.desvioKm < previous.desvioKm)) {
+        closestById.set(station.id_ss, { ...station, kmRuta: position.kmRuta, desvioKm: position.desvioKm });
+      }
+    }
+  });
+
+  // Se redondea antes de agrupar por tramo, para que el tramo cuadre con el kmRuta que se devuelve.
+  const stations = [...closestById.values()]
+    .sort((a, b) => a.kmRuta - b.kmRuta)
+    .map((station): RouteStation => ({ ...station, kmRuta: roundTo2(station.kmRuta), desvioKm: roundTo2(station.desvioKm) }));
+  const cheapest = cheapestPerSection(stations.map((station) => ({ kmRuta: station.kmRuta, price: Number(station[priceColumn]) })));
+  return {
+    route: { distanceKm: Math.round(route.distance / 100) / 10, durationMin: Math.round(route.duration / 60), geometry: simplifyForDrawing(line, cumKm) },
+    stations: stations.map((station, index) => ({ ...station, masBarataDelTramo: cheapest[index] })),
+  };
+}

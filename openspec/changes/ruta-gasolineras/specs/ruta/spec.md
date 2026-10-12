@@ -38,15 +38,15 @@ El sistema DEBE responder 400 ante parámetros inválidos, 404 si no hay ruta po
 de rutas falla.
 
 #### Scenario: ruta-parametros-no-validos
-**WHEN** falta el origen o el destino, no son coordenadas, el desvío no es 1, 2, 5 o 10, o el carburante no es `diesel` ni `gas95`
+**WHEN** falta el origen o el destino, no son coordenadas decimales dentro de España (con Canarias, Ceuta y Melilla), el desvío no es exactamente 1, 2, 5 o 10, o el carburante no es `diesel` ni `gas95`
 **THEN** responde 400 con `{ "error": "Invalid <parámetro>" }` (`from`, `to`, `radius` o `fuel`)
 
 #### Scenario: ruta-sin-ruta
-**WHEN** el servicio de rutas no encuentra ruta por carretera entre los dos puntos
+**WHEN** el servicio de rutas no encuentra ruta por carretera entre los dos puntos: no hay ruta, tiene que mover algún extremo más de 5 km para llegar a una carretera, la ruta incluye un tramo en ferry o supera 1.600 km
 **THEN** responde 404 con `{ "error": "No route" }`
 
 #### Scenario: ruta-servicio-no-disponible
-**WHEN** el servicio de rutas no responde o responde con error
+**WHEN** el servicio de rutas no responde en 10 s, responde con error o sin geometría
 **THEN** responde 502 con `{ "error": "Routing unavailable" }`
 
 verified-by:

@@ -1,7 +1,13 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense, lazy } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, Clock } from 'lucide-react';
 import StationCard from './StationCard';
 import { provinceSortFuel, PROVINCE_SORT_COLUMNS, type Suggestion } from '../lib/provinces';
+
+// La pestaña Ruta (y Leaflet, que necesita window) solo se descarga al abrirla.
+const RouteFinder = lazy(() => import('./RouteFinder'));
+
+type View = 'buscar' | 'ruta';
+const VIEWS: { id: View; label: string }[] = [{ id: 'buscar', label: 'Buscar' }, { id: 'ruta', label: 'Ruta' }];
 
 const FilterForm = ({
   isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit
@@ -89,6 +95,7 @@ const FuelApp: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+  const [view, setView] = useState<View>('buscar');
   const [activeFilters, setActiveFilters] = useState<string[]>(['diesel', 'gasolina']);
   const sortFuel = provinceSortFuel(activeFilters);
   const [sortBy, setSortBy] = useState('price_asc');
@@ -316,6 +323,8 @@ const FuelApp: React.FC = () => {
     });
   }, [pinnedStations, activeFilters]);
 
+  const pinnedIds = useMemo(() => new Set(pinnedStations.map((s) => s.id_ss)), [pinnedStations]);
+
   const availableBrands = useMemo(() => {
     const brands = new Set([...stations, ...pinnedStations].map(s => s.rotulo));
     return Array.from(brands).sort();
@@ -392,12 +401,24 @@ const FuelApp: React.FC = () => {
           <div className='hidden desk:block'><button onClick={toggleTheme} className='p-2 bg-gray-100 astro-dark:bg-white/5 rounded-xl text-secondary astro-dark:text-white'>{theme === 'light' ? <Moon size={20}/> : <Sun size={20}/>}</button></div>
         </header>
         <div className='flex-1 overflow-y-auto overscroll-y-contain custom-scrollbar p-4 desk:p-8'><div className='max-w-4xl w-full mx-auto'>
+          <div role='tablist' aria-label='Modo de búsqueda' className='flex p-1.5 mb-8 rounded-2xl gap-2 bg-gray-100 astro-dark:bg-white/5'>
+            {VIEWS.map(({ id, label }) => (
+              <button key={id} type='button' role='tab' aria-selected={view === id} onClick={() => setView(id)} className={`flex-1 py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all ${view === id ? 'bg-primary text-white shadow-md' : 'text-gray-400'}`}>{label}</button>
+            ))}
+          </div>
+          {view === 'ruta' && (
+            <Suspense fallback={<div className='h-40 w-full rounded-3xl bg-gray-100 astro-dark:bg-white/5 animate-pulse' />}>
+              <RouteFinder activeFilters={activeFilters} pinnedIds={pinnedIds} onTogglePin={togglePin} />
+            </Suspense>
+          )}
+          {view === 'buscar' && (<>
           {sortedPinnedStations.length > 0 && (<div className='mb-12'><h2 className='text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-6 flex items-center ml-1'><span className='w-8 h-px bg-primary/20 mr-3'></span>Favoritos</h2>{sortedPinnedStations.map((s, idx) => <StationCard key={`pin-${s.id_ss}`} station={s} activeFilters={activeFilters} stats={stats} isPinned={true} onTogglePin={togglePin} index={idx} />)}</div>)}
           <div className='flex items-center justify-between mb-6 px-2'><h2 className='font-black text-secondary astro-dark:text-white uppercase tracking-widest text-xs'>{selectedBrands.length > 0 ? `Estaciones de ${selectedBrands.join(', ')} en` : 'Estaciones en'} {debouncedSearch || '...'}</h2><span className='text-[10px] text-gray-400 font-bold'>{filteredResults.length} RESULTADOS</span></div>
           {filteredResults.length === 0 && !loading && debouncedSearch && (<div className='py-20 text-center animate-cascade'><div className='bg-white astro-dark:bg-white/5 rounded-3xl p-10 shadow-sm border border-gray-100 astro-dark:border-white/5'><Search size={48} className='mx-auto text-gray-200 mb-4' /><p className='text-secondary astro-dark:text-white font-black font-bold'>No hay resultados para "{debouncedSearch}"</p><p className='text-gray-400 text-sm mt-1'>Prueba a seleccionar una de las sugerencias.</p></div></div>)}
           <div className='grid grid-cols-1 gap-2'>{filteredResults.map((s, idx) => <StationCard key={s.id_ss} station={s} activeFilters={activeFilters} stats={stats} isPinned={false} onTogglePin={togglePin} index={idx + pinnedStations.length} />)}</div>
           {loading && <div className='flex justify-center py-12'><div className='animate-spin rounded-full h-8 w-8 border-b-2 border-primary'></div></div>}
           {!loading && hasMore && stations.length > 0 && <button onClick={() => fetchData(false)} className='w-full mt-8 py-5 bg-white astro-dark:bg-white/5 border border-gray-200 astro-dark:border-white/10 text-secondary astro-dark:text-white font-black rounded-2xl hover:border-primary/30 transition-all uppercase tracking-widest text-[10px] shadow-sm'>Cargar más resultados</button>}
+          </>)}
         </div></div>
       </div>
     </div>

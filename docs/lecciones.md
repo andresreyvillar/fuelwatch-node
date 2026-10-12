@@ -39,3 +39,11 @@ Reglas nacidas de fallos (skill `leccion`). Cada entrada sigue este formato:
 - **Regla:** El código y la migración DEBEN usar la misma regla de validación (misma expresión regular tras normalizar) y los tests DEBEN cubrir vacío, solo espacios y formatos no decimales.
 - **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones · tests de `coordenadas-numericas`
 - **Estado:** codificada
+
+## Contratos de servicios externos probados contra el servicio real
+- **Instinct:** `contrato-externo-probado-contra-el-servicio-real`
+- **Qué pasó:** en `ruta-gasolineras`, el verificador adversarial refutó `ruta-sin-ruta`: Madrid → Santa Cruz de Tenerife respondía 200 con una ruta de 781 km hasta Portugal. El doble de OSRM de los tests devolvía `NoRoute`, pero OSRM real engancha cada extremo a la carretera más cercana y solo lo indica en `waypoints[].distance`.
+- **Causa raíz:** el escenario de error se escribió a partir de la documentación de OSRM sin una petición real que lo confirmara.
+- **Regla:** Los escenarios de error de un servicio externo DEBEN basarse en respuestas reales (al menos una petición real por caso de error) y el doble de los tests debe reproducirlas.
+- **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones
+- **Estado:** codificada

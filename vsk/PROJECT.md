@@ -74,3 +74,7 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
   DEBEN aplicar la misma regla (la misma expresión regular tras normalizar) y los tests DEBEN incluir vacío, solo
   espacios y formatos no decimales, porque comprobar antes de normalizar deja pasar `'  '` como `0`. *Lección:*
   `parseo-igual-en-codigo-y-migracion`.
+- Los escenarios de error de un servicio externo (OSRM, Photon, Ministerio...) DEBEN basarse en respuestas reales:
+  al menos una petición real por caso de error antes de proponerlos, y el doble de los tests debe reproducir esa
+  respuesta, porque el servicio puede no fallar como se espera (OSRM no da `NoRoute` a un destino sin carretera:
+  lo engancha a la más cercana). *Lección:* `contrato-externo-probado-contra-el-servicio-real`.

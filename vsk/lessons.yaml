@@ -39,3 +39,17 @@
       nota: "coordenadas-numericas: el verificador adversarial refutó coordenada-sin-dato-es-null con ' ' → 0; el SQL lo
         convertía en NULL"
       change: coordenadas-numericas
+- id: contrato-externo-probado-contra-el-servicio-real
+  cuando: Al escribir escenarios de error para un servicio externo (rutas, geocodificación, pagos...)
+  regla: "Los escenarios de error de un servicio externo DEBEN basarse en respuestas reales del servicio (al menos una
+    petición real por caso de error antes de proponer), porque la documentación o la intuición no cubren sus
+    particularidades: OSRM no responde NoRoute a un destino sin carretera, lo engancha a la más cercana"
+  nivel: skill
+  donde: PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-12
+      nota: "ruta-gasolineras: el verificador adversarial refutó ruta-sin-ruta con Madrid → Tenerife (200 con ruta a
+        Portugal); el falso de OSRM devolvía NoRoute"
+      change: ruta-gasolineras
+  promovida: true

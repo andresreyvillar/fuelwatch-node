@@ -10,3 +10,63 @@
     red: pass
   notas: rojo impuesto 7/7 (endpoint aún inexistente; import por variable para que tsc compile); design.md con 3
     alternativas descartadas
+- run: 2026-10-12T12:42:27.512Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: "rojo real 7/7 (módulo inexistente); verde 7/7; zombi del corredor sobrevivía (caja = corredor en ruta
+    recta) → test reforzado con estación pasado el destino; prueba local con 12.465 estaciones reales y OSRM
+    real Vigo→Madrid: 212 estaciones a 2 km, ~30 ms de cálculo; build OK (RouteMap 45 KB gzip, carga
+    diferida); UI sin probar en navegador; despliegue bloqueado hasta la migración"
+  zombis:
+    sembrados: 7
+    cazados: 7
+- run: 2026-10-12T12:43:21.424Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "clean-code-typescript y frontend-core: colores del mapa a clases CSS con tokens del tema;
+    botones/labels semánticos; RouteFinder 104 líneas (lista y formulario en un componente; aceptado)"
+- run: 2026-10-12T12:52:39.480Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  rondas: 2
+  notas: "ronda 2 tras verificación: caja de España en el servidor (M1), radius exacto, timeout 10 s a OSRM, 404
+    si OSRM mueve un extremo > 5 km (refutación ruta-sin-ruta), 502 sin geometría, medida solo contra el tramo
+    propio con proyección por tramo (CPU 1-18 ms, M2), Cache-Control 1 h; UI: CSS de Leaflet aparte, teselas
+    sin subdominio, timeout 20 s, respuestas viejas de Photon descartadas, radio pedido en mensajes"
+  zombis:
+    sembrados: 9
+    cazados: 9
+- run: 2026-10-12T13:01:13.130Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  rondas: 3
+  notas: "ronda 3 por decisión del humano: 404 con ferry (OSRM steps, geometría polyline6 decodificada) y tope
+    de 1.600 km; Ceuta/Melilla documentadas"
+  zombis:
+    sembrados: 11
+    cazados: 11
+- run: 2026-10-12T13:01:13.183Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  rondas: 3
+  notas: "tracer sin huecos; verifier geometría: 11 rutas reales sin refutación; verifier errores: refutó
+    ruta-sin-ruta (OSRM engancha a la carretera más cercana) → corregido; 3ª verificación: ferris reales
+    (Palma, Ibiza, Tenerife) 404, rutas peninsulares largas 200, polyline6 idéntica a GeoJSON; security: M1/M2
+    cerrados, abiertos bajos aceptados N1 (caja rectangular, tope 1.600 km), N2 (sin rate limit), L1 (1.000
+    filas), L2 (error.message)"

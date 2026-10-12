@@ -80,13 +80,15 @@ API Routes (edge)
 ├── /api/search      → busqueda + tendencias
 ├── /api/stats       → min/max/avg
 ├── /api/suggestions → autocompletado
-└── /api/history     → ultimos 30 dias
+├── /api/history     → ultimos 30 dias
+└── /api/route-stations → corredor de una ruta (llama a OSRM)
     │
     ▼
 React Components (cliente)
 ├── FuelApp (estado global)
 ├── StationCard (tarjeta)
-└── PriceChart (grafico)
+├── PriceChart (grafico)
+└── RouteFinder (pestana Ruta, carga diferida) → RouteMap (Leaflet + teselas OSM), PlaceInput (Photon)
 ```
 
 ## Pagina Unica (SPA-like)

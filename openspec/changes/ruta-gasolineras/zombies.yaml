@@ -1,32 +1,69 @@
 # Pruebas zombi de ruta-gasolineras: al menos una por escenario del slice.
 # Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
 # EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
-# find/replace se completan en la implementación (tasks 2.4): el código aún no existe.
 
 - scenario: ruta-gasolineras-en-el-corredor
-  file: frontend_astro/src/lib/route.ts
+  file: frontend_astro/src/lib/fuel.ts
+  find: "position.desvioKm <= radiusKm &&"
+  replace: "position.desvioKm <= radiusKm * 2 &&"
   why: "si el filtro compara con el doble del desvío, entran estaciones más lejanas que el radio"
 
 - scenario: ruta-ordenada-por-km
   file: frontend_astro/src/lib/fuel.ts
+  find: ".sort((a, b) => a.kmRuta - b.kmRuta)"
+  replace: ".sort((a, b) => a.id_ss - b.id_ss)"
   why: "si se ordena por id o por precio en vez de por km de ruta, la lista deja de seguir el viaje"
 
 - scenario: ruta-mas-barata-por-tramo
   file: frontend_astro/src/lib/route.ts
+  find: "export const SECTION_KM = 100;"
+  replace: "export const SECTION_KM = 50;"
   why: "si el tramo se calcula con 50 km en vez de 100, se marcan más estaciones de la cuenta"
 
 - scenario: ruta-sin-precio-excluida
   file: frontend_astro/src/lib/fuel.ts
+  find: ".lte('longitud', box.maxLon)\n      .gt(priceColumn, 0);"
+  replace: ".lte('longitud', box.maxLon);"
   why: "si se quita el filtro de precio > 0, las estaciones sin ese carburante aparecen en la ruta"
 
 - scenario: ruta-parametros-no-validos
   file: frontend_astro/src/pages/api/route-stations.ts
-  why: "si no se comprueba el rango de latitud, una coordenada imposible llega a OSRM"
+  find: "return inSpain ? [lon, lat] : null;"
+  replace: "return [lon, lat];"
+  why: "si no se comprueba que el punto está en España, el endpoint calcula rutas de cualquier sitio (Tokio, Moscú)"
 
 - scenario: ruta-sin-ruta
   file: frontend_astro/src/lib/fuel.ts
+  find: "body?.code === 'NoSegment' || snappedTooFar) throw new RouteNotFoundError('No route');"
+  replace: "body?.code === 'NoSegment' || snappedTooFar) throw new RoutingUnavailableError('No route');"
   why: "si NoRoute de OSRM se trata como fallo del servicio, responde 502 en vez de 404"
 
 - scenario: ruta-servicio-no-disponible
   file: frontend_astro/src/lib/fuel.ts
+  find: "throw new RoutingUnavailableError('Routing service unreachable', { cause: error });"
+  replace: "throw error;"
   why: "si un error de red de OSRM no se captura como RoutingUnavailable, responde 500"
+
+- scenario: ruta-sin-ruta
+  file: frontend_astro/src/lib/fuel.ts
+  find: "waypoint.distance > MAX_SNAP_METERS"
+  replace: "false"
+  why: "si no se mira cuánto ha movido OSRM los extremos, Madrid → Tenerife da una ruta hasta Portugal en vez de 404"
+
+- scenario: ruta-servicio-no-disponible
+  file: frontend_astro/src/lib/fuel.ts
+  find: "{ signal: controller.signal }"
+  replace: "{}"
+  why: "si la llamada a OSRM no tiene límite de tiempo, un OSRM colgado deja la petición abierta en vez de responder 502"
+
+- scenario: ruta-sin-ruta
+  file: frontend_astro/src/lib/fuel.ts
+  find: "if (usesFerry || route.distance > MAX_ROUTE_METERS) throw new RouteNotFoundError('No route');"
+  replace: "if (route.distance > MAX_ROUTE_METERS) throw new RouteNotFoundError('No route');"
+  why: "si no se miran los pasos en ferry, Palma → Madrid sale como ruta por carretera"
+
+- scenario: ruta-sin-ruta
+  file: frontend_astro/src/lib/fuel.ts
+  find: "const MAX_ROUTE_METERS = 1_600_000;"
+  replace: "const MAX_ROUTE_METERS = Infinity;"
+  why: "sin tope de longitud, el endpoint calcula rutas de miles de km entre países vecinos dentro de la caja"
