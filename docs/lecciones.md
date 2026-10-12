@@ -31,3 +31,11 @@ Reglas nacidas de fallos (skill `leccion`). Cada entrada sigue este formato:
 - **Regla:** El falso de Supabase DEBE rechazar lo que PostgREST rechaza (en `.or()`, valores con caracteres reservados sin comillas) y el texto del usuario en `.or()` DEBE ir entre comillas con `quoteFilterValue()`, porque un doble más permisivo que el servidor deja en verde consultas que fallan en producción.
 - **Codificada en:** `frontend_astro/tests/support/fake-supabase.ts` (`parseOrValue`) · `PROJECT.md` §Reglas nacidas de lecciones
 - **Estado:** codificada (pendiente aplicar a `getSearchConditions()` en el slice de seguridad)
+
+## Misma regla de parseo en el código y en la migración
+- **Instinct:** `parseo-igual-en-codigo-y-migracion`
+- **Qué pasó:** en `coordenadas-numericas`, el verificador adversarial y la revisión de seguridad refutaron `coordenada-sin-dato-es-null`: `parseCoordinate(' ')` devolvía `0` (la comprobación `value &&` se hacía antes de `trim()` y `Number('')` es 0), mientras la migración SQL convertía el mismo valor en `NULL`.
+- **Causa raíz:** la regla de validación estaba escrita dos veces de forma distinta (código y SQL) y los tests solo cubrían `''` y `'sin dato'`.
+- **Regla:** El código y la migración DEBEN usar la misma regla de validación (misma expresión regular tras normalizar) y los tests DEBEN cubrir vacío, solo espacios y formatos no decimales.
+- **Codificada en:** `PROJECT.md` §Reglas nacidas de lecciones · tests de `coordenadas-numericas`
+- **Estado:** codificada

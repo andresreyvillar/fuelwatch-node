@@ -21,6 +21,7 @@ Ninguno.
    - Parsea JSON, extrae `ListaEESSPrecio`
    - Para cada estacion:
      - Parsea precios (formato espanol con coma -> float)
+     - Parsea coordenadas con `parseCoordinate()` (coma -> numero; vacio o no numerico -> `null`)
      - Crea registro para `servicestations`
      - Si tiene al menos 1 precio > 0, crea registro para `price_history`
    - Upsert en batches de 1000 a `servicestations` (ON CONFLICT id_ss)

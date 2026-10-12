@@ -6,6 +6,14 @@ function checkSupabase() {
   return supabase;
 }
 
+const DECIMAL = /^-?\d+(\.\d+)?$/;
+
+// "42,240611" → 42.240611; vacío, solo espacios o no decimal → null. Misma regla que scripts/sync-prices.mjs.
+function parseCoordinate(value: string | undefined): number | null {
+  const normalized = String(value ?? '').trim().replace(',', '.');
+  return DECIMAL.test(normalized) ? Number(normalized) : null;
+}
+
 export async function updateDataFromMinistry() {
   const url = 'https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/EstacionesTerrestres/';
   const response = await fetch(url);
@@ -38,8 +46,8 @@ export async function updateDataFromMinistry() {
       provincia: eess['Provincia'],
       localidad: eess['Localidad'],
       cp: eess['C.P.'],
-      longitud: eess['Longitud (WGS84)'],
-      latitud: eess['Latitud'],
+      longitud: parseCoordinate(eess['Longitud (WGS84)']),
+      latitud: parseCoordinate(eess['Latitud']),
       fecha_actualizacion: new Date().toISOString(),
     });
 

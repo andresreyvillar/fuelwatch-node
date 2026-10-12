@@ -10,3 +10,47 @@
     red: pass
   notas: rojo impuesto 4/4 (2 escenarios × 2 rutas); endpoint falla por aserción (texto con coma), script por
     process.exit al importar sin credenciales; regresión 1/1
+- run: 2026-10-12T11:15:32.461Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 4/4; verde 4/4; regresión 1/1; node --check OK; sin credenciales sigue saliendo con 1;
+    migración SQL escrita (la ejecuta el humano)
+  zombis:
+    sembrados: 4
+    cazados: 4
+- run: 2026-10-12T11:15:58.658Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "clean-code-typescript sin cambios; frontend-core: sin UI. parseCoordinate duplicada a propósito en las
+    dos rutas (patrón del proyecto, CLAUDE.md)"
+- run: 2026-10-12T11:21:03.417Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  rondas: 2
+  notas: "ronda 2: parseCoordinate con la regex del SQL tras trim (cierra refutación ' ' → 0 y S1/S2),
+    realpathSync (S3), SQL con copia en esquema backup, REVOKE, lock_timeout y regexp de espacios (S4, I1,
+    I2)"
+  zombis:
+    sembrados: 4
+    cazados: 4
+- run: 2026-10-12T11:21:03.470Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  rondas: 2
+  notas: "tracer sin huecos; verifier: refutó ' ' → 0, corregido y re-verificado sin refutación con el JSON real
+    del Ministerio (11515 estaciones, 23030 coordenadas coinciden con la regla del SQL); security: S1-S4
+    cerrados con prueba de ataque y uso legítimo. Preexistentes abiertos: update-prices sin auth y con stack,
+    anon puede escribir (RLS), endpoints debug expuestos (debug-upsert escribe coordenadas como texto)"

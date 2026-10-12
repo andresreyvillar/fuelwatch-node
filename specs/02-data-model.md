@@ -19,8 +19,8 @@ CREATE TABLE servicestations (
   provincia   TEXT,                       -- Provincia
   localidad   TEXT,                       -- Localidad/ciudad
   cp          TEXT,                       -- Codigo postal
-  longitud    NUMERIC,                    -- Longitud WGS84
-  latitud     NUMERIC,                    -- Latitud WGS84
+  longitud    DOUBLE PRECISION,           -- Longitud WGS84 (NULL si el Ministerio no la da)
+  latitud     DOUBLE PRECISION,           -- Latitud WGS84 (NULL si el Ministerio no la da)
   fecha_actualizacion TIMESTAMP           -- Ultima actualizacion (ISO 8601)
 );
 
@@ -64,8 +64,8 @@ interface Station {
   provincia: string;
   localidad: string;
   cp: string;
-  longitud: number;
-  latitud: number;
+  longitud: number | null;
+  latitud: number | null;
   fecha_actualizacion: string;
   trend: TrendData | null;  // Adjuntado por attachTrends()
 }
@@ -133,8 +133,8 @@ interface SearchResult {
 | `Provincia` | `provincia` |
 | `Localidad` | `localidad` |
 | `C.P.` | `cp` |
-| `Longitud (WGS84)` | `longitud` |
-| `Latitud` | `latitud` |
+| `Longitud (WGS84)` | `longitud` (parseCoordinate) |
+| `Latitud` | `latitud` (parseCoordinate) |
 
 ### parsePrice
 
@@ -147,6 +147,21 @@ Input:  null    -> Output: 0
 ```
 
 Logica: `parseFloat(value.replace(',', '.'))` o `0` si vacio/null.
+
+### parseCoordinate
+
+Convierte una coordenada del Ministerio a numero; a diferencia de los precios, lo que no es un numero es `null` (nunca `0`, que seria un punto real del mapa):
+
+```
+Input:  "42,240611" -> Output: 42.240611
+Input:  "-8,720278" -> Output: -8.720278
+Input:  ""          -> Output: null
+Input:  "sin dato"  -> Output: null
+```
+
+Logica: `trim(value).replace(',', '.')`; si casa con `^-?\d+(\.\d+)?$` (la misma regla que la migracion SQL), `Number()` de ese texto; si no (vacio, solo espacios, `0x10`, `1e3`...), `null`. Esta en `scripts/sync-prices.mjs` (exportada) y en `lib/fuel.ts`.
+
+**Migracion:** las columnas eran texto con coma decimal. `supabase/coordenadas-numericas.sql` las convierte a `double precision` y crea el indice `(latitud, longitud)`; se ejecuta a mano en el editor SQL de Supabase despues de desplegar el parseo.
 
 ## Mapeo de claves entre servicestations y price_history
 

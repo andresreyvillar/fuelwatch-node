@@ -26,3 +26,16 @@
         real (LIKE pattern must not end with escape character) mientras los tests pasaban con el falso"
       change: busqueda-por-provincia
   promovida: true
+- id: parseo-igual-en-codigo-y-migracion
+  cuando: Al convertir datos externos en el código de sincronización y, a la vez, en una migración SQL
+  regla: El código y la migración DEBEN usar la misma regla de validación (misma expresión regular tras normalizar) y los
+    tests DEBEN cubrir vacío, solo espacios y formatos no decimales, porque una comprobación hecha antes de normalizar
+    (value && ...) deja pasar '  ' como 0 y las dos vías divergen
+  nivel: skill
+  donde: PROJECT.md §Reglas nacidas de lecciones
+  estado: codificada
+  evidencias:
+    - fecha: 2026-10-12
+      nota: "coordenadas-numericas: el verificador adversarial refutó coordenada-sin-dato-es-null con ' ' → 0; el SQL lo
+        convertía en NULL"
+      change: coordenadas-numericas

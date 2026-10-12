@@ -69,3 +69,7 @@ Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
   sintaxis de PostgREST: sin comillas, «coruña (a)» rompe la consulta y una coma añade condiciones. El doble
   `tests/support/fake-supabase.ts` rechaza los valores reservados sin comillas, como PostgREST. *Lección:*
   `falso-supabase-tan-estricto-como-postgrest`. *Pendiente:* `getSearchConditions()` aún usa `\(` (slice de seguridad).
+- Cuando un dato externo se convierte a la vez en el código de sincronización y en una migración SQL, las dos vías
+  DEBEN aplicar la misma regla (la misma expresión regular tras normalizar) y los tests DEBEN incluir vacío, solo
+  espacios y formatos no decimales, porque comprobar antes de normalizar deja pasar `'  '` como `0`. *Lección:*
+  `parseo-igual-en-codigo-y-migracion`.

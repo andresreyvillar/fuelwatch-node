@@ -90,6 +90,16 @@ Los precios del Ministerio usan formato espanol (coma decimal):
 null     -> 0
 ```
 
+#### 3b. Parsing de coordenadas
+
+`Latitud` y `Longitud (WGS84)` tambien llevan coma decimal. Las dos rutas usan `parseCoordinate()`:
+```
+"42,240611" -> 42.240611
+""          -> null
+"sin dato"  -> null
+```
+En `scripts/sync-prices.mjs`, `toStation(eess)` construye el registro y esta exportada junto a `parseCoordinate()`; la sincronizacion solo se ejecuta al lanzar el script con `node` (importarlo no hace nada).
+
 #### 4. Registro de servicestations
 
 Campos mapeados (ver `02-data-model.md` para mapeo completo):

@@ -47,7 +47,7 @@ afterEach(() => {
 
 describe('GET /api/update-prices — coordenadas numéricas', () => {
   /** @scenarios coordenadas-guardadas-como-numero */
-  test.fails('coordenadas-guardadas-como-numero: guarda latitud y longitud como números', async () => {
+  test('coordenadas-guardadas-como-numero: guarda latitud y longitud como números', async () => {
     givenMinistryPublishes([ministryStation('362', '42,240611', '-8,720278')]);
 
     expect(await runSync()).toBe(200);
@@ -55,12 +55,21 @@ describe('GET /api/update-prices — coordenadas numéricas', () => {
   });
 
   /** @scenarios coordenada-sin-dato-es-null */
-  test.fails('coordenada-sin-dato-es-null: una coordenada vacía o no numérica se guarda como null', async () => {
+  test('coordenada-sin-dato-es-null: una coordenada vacía o no numérica se guarda como null', async () => {
     givenMinistryPublishes([ministryStation('1', '', '-8,720278'), ministryStation('2', '42,240611', 'sin dato')]);
 
     expect(await runSync()).toBe(200);
     expect(storedStation(1)).toMatchObject({ id_ss: 1, latitud: null, longitud: -8.720278, localidad: 'VIGO' });
     expect(storedStation(2)).toMatchObject({ id_ss: 2, latitud: 42.240611, longitud: null, localidad: 'VIGO' });
+  });
+
+  /** @scenarios coordenada-sin-dato-es-null */
+  test('coordenada-sin-dato-es-null: solo espacios o formatos que no son decimales también son null', async () => {
+    givenMinistryPublishes([ministryStation('1', ' ', '\t'), ministryStation('2', '0x10', '1e3')]);
+
+    expect(await runSync()).toBe(200);
+    expect(storedStation(1)).toMatchObject({ latitud: null, longitud: null });
+    expect(storedStation(2)).toMatchObject({ latitud: null, longitud: null });
   });
 });
 

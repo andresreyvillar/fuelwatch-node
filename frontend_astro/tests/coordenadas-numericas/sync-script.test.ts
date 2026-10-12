@@ -25,17 +25,25 @@ const ministryStation = (latitud: string, longitud: string): MinistryStation => 
 
 describe('scripts/sync-prices.mjs — coordenadas numéricas', () => {
   /** @scenarios coordenadas-guardadas-como-numero */
-  test.fails('coordenadas-guardadas-como-numero: la estación lleva latitud y longitud como números', async () => {
+  test('coordenadas-guardadas-como-numero: la estación lleva latitud y longitud como números', async () => {
     const { toStation } = await loadSyncScript();
 
     expect(toStation(ministryStation('42,240611', '-8,720278'))).toMatchObject({ latitud: 42.240611, longitud: -8.720278 });
   });
 
   /** @scenarios coordenada-sin-dato-es-null */
-  test.fails('coordenada-sin-dato-es-null: una coordenada vacía o no numérica es null', async () => {
+  test('coordenada-sin-dato-es-null: una coordenada vacía o no numérica es null', async () => {
     const { toStation } = await loadSyncScript();
 
     expect(toStation(ministryStation('', '-8,720278'))).toMatchObject({ latitud: null, longitud: -8.720278, localidad: 'VIGO' });
     expect(toStation(ministryStation('42,240611', 'sin dato'))).toMatchObject({ latitud: 42.240611, longitud: null, localidad: 'VIGO' });
+  });
+
+  /** @scenarios coordenada-sin-dato-es-null */
+  test('coordenada-sin-dato-es-null: solo espacios o formatos que no son decimales también son null', async () => {
+    const { toStation } = await loadSyncScript();
+
+    expect(toStation(ministryStation(' ', '\t'))).toMatchObject({ latitud: null, longitud: null });
+    expect(toStation(ministryStation('0x10', '1e3'))).toMatchObject({ latitud: null, longitud: null });
   });
 });
