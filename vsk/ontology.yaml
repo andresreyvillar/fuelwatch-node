@@ -425,5 +425,14 @@ elementos:
           carretera»,
         slice: ruta-orden-y-distancia,
         relaciones: { relaciona: [ ruta, precio, estacion-de-servicio ] }
+      },
+    {
+        id: direccion-google-maps,
+        tipo: Slice,
+        nombre: Dirección enlazada a Google Maps,
+        descripcion: "Pulsar la dirección de una estación abre Google Maps (pestaña nueva o app) en sus coordenadas, o por
+          dirección si no son válidas",
+        slice: direccion-en-google-maps,
+        relaciones: { relaciona: [ estacion-de-servicio ] }
       }
   ]

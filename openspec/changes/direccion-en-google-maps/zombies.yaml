@@ -1,0 +1,9 @@
+# Pruebas zombi de direccion-en-google-maps. find/replace se completan en la implementación (tasks 2.2).
+
+- scenario: direccion-abre-google-maps
+  file: frontend_astro/src/lib/maps.ts
+  why: "si el enlace usa siempre la dirección, el punto no es exacto aunque haya coordenadas"
+
+- scenario: direccion-sin-coordenadas-busca-por-direccion
+  file: frontend_astro/src/lib/maps.ts
+  why: "si no se comprueba que las coordenadas están en España, las estaciones en 0,0 abren el golfo de Guinea"
