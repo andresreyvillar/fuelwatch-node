@@ -7,7 +7,7 @@ components:
       description: "FuelApp (búsqueda, filtros, favoritos en localStorage), StationCard y PriceChart" }
   - { id: api, name: API HTTP, layer: Entrada,
       paths: ["frontend_astro/src/pages/api/**"],
-      description: "Endpoints SSR: search, history, stats, suggestions, update-prices (y debug/test sin spec)" }
+      description: "Endpoints SSR: search, history, stats, suggestions, update-prices" }
   - { id: cron, name: GitHub Actions cron, layer: Entrada,
       paths: [".github/workflows/**"],
       description: "Lanza la sincronización de precios cada hora" }

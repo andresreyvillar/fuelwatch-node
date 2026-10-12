@@ -226,8 +226,7 @@ Ver spec dedicada: [filter-form.md](./filter-form.md)
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon } from 'lucide-react';
 import StationCard from './StationCard';
-import { provinceSortFuel } from '../lib/provinces';
-import type { Suggestion } from '../lib/fuel';
+import { provinceSortFuel, PROVINCE_SORT_COLUMNS, type Suggestion } from '../lib/provinces';
 ```
 
 ## localStorage Keys

@@ -160,7 +160,7 @@ Adjunta tendencias con `attachTrends()` y devuelve `{ data, meta: { total, page,
 ### getSuggestions(query)
 
 ```typescript
-export type Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string };
+// Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string }, definido en lib/provinces.ts
 export async function getSuggestions(query: string): Promise<Suggestion[]>
 ```
 

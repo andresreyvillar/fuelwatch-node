@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Fuel as FuelIcon, Droplets, ChevronDown, Check, Menu, X, Sun, Moon, Clock } from 'lucide-react';
 import StationCard from './StationCard';
-import { provinceSortFuel, PROVINCE_SORT_COLUMNS } from '../lib/provinces';
-import type { Suggestion } from '../lib/fuel';
+import { provinceSortFuel, PROVINCE_SORT_COLUMNS, type Suggestion } from '../lib/provinces';
 
 const FilterForm = ({
   isDark, search, setSearch, activeFilters, onToggleFilter, selectedBrands, setSelectedBrands, isBrandDropdownOpen, setIsBrandDropdownOpen, availableBrands, tempPriceRange, setPriceTempRange, suggestions, onSelectSuggestion, isSearchFocused, setIsSearchFocused, sortBy, setSortBy, onSearchSubmit

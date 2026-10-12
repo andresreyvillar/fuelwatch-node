@@ -76,7 +76,6 @@ No linter or formatter is installed yet (ESLint/Prettier gates are optional in `
 ## Repository layout gotchas
 
 - **Only `frontend_astro/` is live.** `backend_nestjs/` (NestJS + DB pooling), `backend_legacy/` (PHP) and the root Angular files (`angular.json`, `karma.conf.js`, `tsconfig*.json`, root `README.md`) are leftovers from earlier versions. Don't modify them or follow their READMEs.
-- `frontend_astro/src/pages/api/` contains unspecced `debug*.ts` and `test.ts` endpoints in addition to the five specced ones.
 
 ## Architecture notes (cross-file)
 

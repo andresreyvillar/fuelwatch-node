@@ -38,10 +38,11 @@ Estilo: **por capas**, sin gate de dependencias (sin dependency-cruiser). Las ca
 | Datos | Cliente Supabase | `frontend_astro/src/lib/supabase.ts` |
 
 Reglas de dependencia (revisadas en el gate `clean-code`, no automatizadas):
-- La UI solo habla con la API HTTP (`fetch('/api/...')`); nunca importa `lib/fuel.ts` ni `lib/supabase.ts`.
+- La UI solo habla con la API HTTP (`fetch('/api/...')`); nunca importa `lib/fuel.ts` ni `lib/supabase.ts`
+  (ni siquiera `import type`). Sí puede importar módulos puros sin Supabase, como `lib/provinces.ts`.
 - Los endpoints de `pages/api/` delegan en `lib/fuel.ts`; no consultan Supabase directamente.
-  Excepciones heredadas, anotadas en `vsk/debt.txt`: `suggestions.ts` y los `debug*.ts` importan
-  `lib/supabase.ts`. Ningún endpoint nuevo amplía la lista.
+  Sin excepciones: las heredadas (`suggestions.ts`, `debug*.ts`) se retiraron. Ningún endpoint nuevo consulta
+  Supabase directamente.
 - Solo `lib/fuel.ts` importa `lib/supabase.ts`. `scripts/sync-prices.mjs` es independiente (Node, fuera
   de Cloudflare) y no importa nada de `frontend_astro/`.
 

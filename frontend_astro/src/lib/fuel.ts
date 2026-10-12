@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { matchProvinces, PROVINCE_SORT_COLUMNS, type ProvinceSortFuel } from './provinces';
+import { matchProvinces, PROVINCE_SORT_COLUMNS, type ProvinceSortFuel, type Suggestion } from './provinces';
 
 function checkSupabase() {
   if (!supabase) throw new Error('Supabase client not initialized. Check your environment variables.');
@@ -174,8 +174,6 @@ export async function searchStationsByProvince(province: string, fuel: ProvinceS
   const withTrends = await attachTrends(data);
   return { data: withTrends, meta: { total: count || 0, page, lastPage: Math.ceil((count || 0) / limit) } };
 }
-
-export type Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string };
 
 export async function getSuggestions(query: string): Promise<Suggestion[]> {
   if (query.trim().length < 2) return [];

@@ -1,5 +1,8 @@
 export type ProvinceSortFuel = 'diesel' | 'gas95';
 
+// Respuesta de /api/suggestions. Vive aquí (módulo sin Supabase) para que la UI pueda importarla.
+export type Suggestion = { tipo: 'localidad' | 'provincia'; nombre: string };
+
 export const PROVINCE_SORT_COLUMNS = { diesel: 'precio_diesel', gas95: 'precio_gasolina_95' } as const;
 
 // Grafía exacta de la columna servicestations.provincia (la del Ministerio).
