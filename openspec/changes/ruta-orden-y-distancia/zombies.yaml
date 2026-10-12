@@ -1,10 +1,13 @@
 # Pruebas zombi de ruta-orden-y-distancia: una por escenario nuevo del slice ruta-gasolineras.
-# find/replace se completan en la implementación (tasks 2.3): el código aún no existe.
 
 - scenario: ruta-ordenada-por-precio
   file: frontend_astro/src/lib/route-list.ts
+  find: "price(a) - price(b) || byKm(a, b)"
+  replace: "price(a) - price(b)"
   why: "si a igual precio no se desempata por km de ruta, dos gasolineras con el mismo precio salen en orden arbitrario"
 
 - scenario: ruta-distancia-desde-origen
   file: frontend_astro/src/lib/route-list.ts
+  find: "km.toFixed(decimals).replace('.', ',')"
+  replace: "km.toFixed(decimals)"
   why: "si el desvío se muestra con punto decimal, la etiqueta no sigue el formato español"

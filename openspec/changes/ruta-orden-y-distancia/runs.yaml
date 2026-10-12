@@ -10,3 +10,54 @@
     red: pass
   notas: rojo impuesto 2/2 (esqueleto route-list.ts); rehecho como slice nuevo tras fallar red al modificar
     ruta-gasolineras
+- run: 2026-10-12T13:27:31.898Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: rojo real 2/2; verde 2/2; RouteStationList extraído (RouteFinder 103 líneas); carburante de la petición
+    guardado en el resultado
+  zombis:
+    sembrados: 2
+    cazados: 2
+- run: 2026-10-12T13:27:35.715Z
+  fase: refactor
+  actor: agente
+  gates:
+    clean-code: pass
+  notas: "clean-code-typescript y frontend-core: módulo puro sin mutación, select con label y chevron
+    aria-hidden, lista extraída a componente propio"
+- run: 2026-10-12T13:27:56.043Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: zombi del desempate sobrevivía (sort estable + entrada ya ordenada) → test reforzado con empate en
+    orden inverso
+  zombis:
+    sembrados: 2
+    cazados: 2
+- run: 2026-10-12T13:28:31.757Z
+  fase: implement
+  actor: agente
+  gates:
+    green: pass
+    zombie: pass
+  notas: "CORRIGE el run anterior: aquel registró zombie=pass antes de reforzar el test (el edit estaba
+    bloqueado por el hook). Ahora sí: test reforzado con empate en orden inverso y 2/2 zombis caen"
+  zombis:
+    sembrados: 2
+    cazados: 2
+- run: 2026-10-12T13:30:21.644Z
+  fase: verify
+  actor: agente
+  gates:
+    traceability: pass
+    adversarial: pass
+    security: pass
+    docs: pass
+  notas: "verifier: no refuta (212 estaciones reales; empates por km; etiqueta con datos reales); security: sin
+    hallazgos; trazabilidad sin huecos salvo UI sin test (documentado); arreglado mensaje de lista vacía con
+    el carburante de la petición"

@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState } from 'react';
 import { Navigation } from 'lucide-react';
 import PlaceInput, { type Place } from './PlaceInput';
-import StationCard from './StationCard';
+import RouteStationList, { type RouteStation } from './RouteStationList';
 import { PROVINCE_SORT_COLUMNS, provinceSortFuel } from '../lib/provinces';
 
 const RouteMap = lazy(() => import('./RouteMap'));
@@ -19,8 +19,11 @@ const ERROR_MESSAGES: Record<number, string> = {
 
 type RouteResult = {
   route: { distanceKm: number; durationMin: number; geometry: [number, number][] };
-  stations: (Record<string, any> & { id_ss: number; kmRuta: number; desvioKm: number; masBarataDelTramo: boolean })[];
-  radiusKm: number; // el pedido, no el que haya ahora en el selector
+  stations: RouteStation[];
+  // Lo pedido, no lo que haya ahora en el selector o en los filtros.
+  radiusKm: number;
+  fuel: keyof typeof FUEL_LABELS;
+  priceColumn: string;
 };
 
 // Siempre en decimal: Photon puede dar 1e-7 y la API solo acepta decimales.
@@ -51,7 +54,7 @@ const RouteFinder: React.FC<RouteFinderProps> = ({ activeFilters, pinnedIds, onT
       const params = new URLSearchParams({ from: formatLonLat(origin), to: formatLonLat(destination), radius: String(radiusKm), fuel });
       const response = await fetch(`/api/route-stations?${params}`, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
       if (!response.ok) { setError(ERROR_MESSAGES[response.status] ?? 'No se ha podido calcular la ruta.'); return; }
-      setResult({ ...(await response.json()), radiusKm });
+      setResult({ ...(await response.json()), radiusKm, fuel, priceColumn });
     } catch {
       setError('No se ha podido calcular la ruta.');
     } finally {
@@ -87,20 +90,11 @@ const RouteFinder: React.FC<RouteFinderProps> = ({ activeFilters, pinnedIds, onT
             <span className='text-[10px] text-gray-400 font-bold'>{result.stations.length} GASOLINERAS</span>
           </div>
           <Suspense fallback={<div className='h-80 desk:h-96 w-full rounded-3xl bg-gray-100 astro-dark:bg-white/5 animate-pulse mb-6' />}>
-            <RouteMap geometry={result.route.geometry} stations={result.stations.map((station) => ({ id_ss: station.id_ss, rotulo: station.rotulo, latitud: station.latitud, longitud: station.longitud, kmRuta: station.kmRuta, price: station[priceColumn], masBarataDelTramo: station.masBarataDelTramo }))} />
+            <RouteMap geometry={result.route.geometry} stations={result.stations.map((station) => ({ id_ss: station.id_ss, rotulo: station.rotulo, latitud: station.latitud, longitud: station.longitud, kmRuta: station.kmRuta, price: station[result.priceColumn], masBarataDelTramo: station.masBarataDelTramo }))} />
           </Suspense>
-          {result.stations.length === 0 && <p className='py-10 text-center text-gray-400 text-sm'>No hay gasolineras con precio de {FUEL_LABELS[fuel]} a {result.radiusKm} km o menos de la ruta.</p>}
-          <ol className='grid grid-cols-1 gap-2'>
-            {result.stations.map((station, index) => (
-              <li key={station.id_ss}>
-                <p className='text-[10px] font-black uppercase tracking-widest ml-2 mb-1 text-gray-400'>
-                  km {Math.round(station.kmRuta)} · a {station.desvioKm.toFixed(1)} km de la ruta
-                  {station.masBarataDelTramo && <span className='ml-2 text-green-600'>Más barata del tramo</span>}
-                </p>
-                <StationCard station={station} activeFilters={activeFilters} stats={null} isPinned={pinnedIds.has(station.id_ss)} onTogglePin={onTogglePin} index={index} />
-              </li>
-            ))}
-          </ol>
+          {result.stations.length === 0
+            ? <p className='py-10 text-center text-gray-400 text-sm'>No hay gasolineras con precio de {FUEL_LABELS[result.fuel]} a {result.radiusKm} km o menos de la ruta.</p>
+            : <RouteStationList stations={result.stations} priceColumn={result.priceColumn} activeFilters={activeFilters} pinnedIds={pinnedIds} onTogglePin={onTogglePin} />}
         </>
       )}
     </section>

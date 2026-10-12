@@ -31,8 +31,8 @@ interface RouteFinderProps {
      502 → "El servicio de rutas no responde ahora mismo. Intentalo en un rato."; otro → "No se ha podido calcular
      la ruta." (`role="alert"`).
 5. Resultado: cabecera "{distanceKm} km · {h} h {min} min" y "N GASOLINERAS"; `RouteMap` (ruta en color primary, estaciones
-   como `CircleMarker` (clases `.route-line`, `.route-station`, `.route-station-cheapest` de `global.css`), la mas barata del tramo en verde y mas grande, popup con rotulo, km y precio); lista `ol`
-   por km con "km X · a Y km de la ruta" y "Mas barata del tramo", y `StationCard` con `stats={null}`.
+   como `CircleMarker` (clases `.route-line`, `.route-station`, `.route-station-cheapest` de `global.css`), la mas barata del tramo en verde y mas grande, popup con rotulo, km y precio); lista en
+   `RouteStationList` (ver abajo).
 6. Sin estaciones: "No hay gasolineras con precio de {carburante} a {radio} km o menos de la ruta."
 
 ## Mapa
@@ -44,3 +44,15 @@ El CSS de Leaflet se importa como URL (`leaflet/dist/leaflet.css?url`) y se pint
 `<link rel="stylesheet" precedence="default">` (React 19 lo sube al `<head>`): solo se descarga con el mapa.
 
 `PlaceInput` descarta las respuestas de Photon de un texto que ya ha cambiado (no pisan las sugerencias actuales).
+
+## RouteStationList
+
+`src/components/RouteStationList.tsx`, lista de la ruta (se monta de nuevo con cada ruta, asi que vuelve al orden
+por defecto):
+
+- Selector "Ordenar": "Por km de ruta" (por defecto) | "Por precio". Ordena en el navegador con
+  `sortRouteStations(stations, order, priceColumn)` de `lib/route-list.ts`: por `kmRuta`, o por el precio del
+  carburante con el que se pidio la ruta (guardado en el resultado, no el de los filtros actuales) y, a igual
+  precio, por `kmRuta`. No muta la lista original.
+- Cada `li`: etiqueta `routePositionLabel(station)` = "A {round(kmRuta)} km del origen · a {desvioKm con 1 decimal
+  y coma} km de la carretera", "Mas barata del tramo" si toca, y `StationCard` con `stats={null}`.
