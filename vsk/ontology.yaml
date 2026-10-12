@@ -335,5 +335,31 @@ elementos:
           precio de ese carburante, ordenadas de menor a mayor; GET /api/stats?province",
         slice: busqueda-por-provincia,
         relaciones: { relaciona: [ provincia, precio, carburante, sugerencia, estadistica-de-zona ] }
+      },
+    {
+        id: sincronizar-coordenadas,
+        tipo: EscenarioFuncional,
+        nombre: Sincronizar coordenadas como número,
+        descripcion: "El sincronizador vuelca cada hora las estaciones del Ministerio con latitud y longitud numéricas, listas
+          para buscar por zona",
+        clase: feliz,
+        relaciones: { especifica: [ sincronizar-precios ] }
+      },
+    {
+        id: coordenada-sin-dato,
+        tipo: EscenarioFuncional,
+        nombre: Estación sin coordenadas,
+        descripcion: "El Ministerio publica una estación sin latitud o longitud válidas: se guarda igual, con la coordenada vacía",
+        clase: error,
+        relaciones: { especifica: [ sincronizar-precios ] }
+      },
+    {
+        id: coordenadas-numericas-sync,
+        tipo: Slice,
+        nombre: Coordenadas numéricas en la sincronización,
+        descripcion: Las dos rutas de sincronización guardan latitud y longitud como números (null si faltan); la migración pasa
+          las columnas a double precision con índice,
+        slice: coordenadas-numericas,
+        relaciones: { relaciona: [ sincronizacion, estacion-de-servicio ] }
       }
   ]

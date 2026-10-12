@@ -1,0 +1,12 @@
+- run: 2026-10-12T10:54:58.525Z
+  fase: tdd
+  actor: agente
+  gates:
+    validate: pass
+    specs-untouched: pass
+    specs-coverage: pass
+    ceremony: pass
+    coverage: pass
+    red: pass
+  notas: rojo impuesto 4/4 (2 escenarios × 2 rutas); endpoint falla por aserción (texto con coma), script por
+    process.exit al importar sin credenciales; regresión 1/1

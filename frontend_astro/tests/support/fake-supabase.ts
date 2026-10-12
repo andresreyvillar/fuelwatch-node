@@ -8,6 +8,7 @@ type QueryError = { message: string };
 type QueryResult = { data: Row[] | null; error: QueryError | null; count: number | null };
 
 const tables = new Map<string, Row[]>();
+const upserts = new Map<string, Row[]>();
 let failure: QueryError | null = null;
 
 export const fakeDatabase = {
@@ -17,11 +18,25 @@ export const fakeDatabase = {
   failWith(message: string): void {
     failure = { message };
   },
+  // Filas enviadas con upsert() a una tabla, en orden.
+  upserted(table: string): Row[] {
+    return upserts.get(table) ?? [];
+  },
   reset(): void {
     tables.clear();
+    upserts.clear();
     failure = null;
   },
 };
+
+// supabase-js envía las filas como JSON: se guarda lo que sobrevive a JSON.stringify (NaN → null).
+const upsert = (table: string, rows: Row[]) => ({
+  then: <T>(resolve: (result: { data: null; error: QueryError | null }) => T) => {
+    if (failure) return resolve({ data: null, error: failure });
+    upserts.set(table, [...(upserts.get(table) ?? []), ...(JSON.parse(JSON.stringify(rows)) as Row[])]);
+    return resolve({ data: null, error: null });
+  },
+});
 
 const compare = (a: unknown, b: unknown): number => {
   if (typeof a === 'number' && typeof b === 'number') return a - b;
@@ -135,6 +150,8 @@ const query = (state: QueryState) => {
 };
 
 export const fakeSupabase = {
-  from: (table: string) =>
-    query({ table, columns: null, countRequested: false, head: false, predicates: [], orders: [], window: null }),
+  from: (table: string) => ({
+    ...query({ table, columns: null, countRequested: false, head: false, predicates: [], orders: [], window: null }),
+    upsert: (rows: Row[], _options?: { onConflict?: string }) => upsert(table, rows),
+  }),
 };

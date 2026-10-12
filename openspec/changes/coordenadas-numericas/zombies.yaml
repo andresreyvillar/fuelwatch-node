@@ -1,0 +1,20 @@
+# Pruebas zombi de coordenadas-numericas: al menos una por escenario del slice.
+# Cada zombi es una mutación controlada del código de producción. Con el zombi dentro debe caer
+# EXACTAMENTE el test del escenario (o los de expect); al retirarlo la suite vuelve a verde.
+# find/replace se completan en la implementación (tasks 2.3): el código aún no existe.
+
+- scenario: coordenadas-guardadas-como-numero
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si updateDataFromMinistry() vuelve a copiar la latitud sin parsear, se guarda el texto con coma"
+
+- scenario: coordenadas-guardadas-como-numero
+  file: scripts/sync-prices.mjs
+  why: "si el script no cambia la coma por punto, parseFloat corta en la coma (42,24 → 42)"
+
+- scenario: coordenada-sin-dato-es-null
+  file: frontend_astro/src/lib/fuel.ts
+  why: "si una coordenada vacía se convierte en 0 en vez de null, la estación aparece en el golfo de Guinea"
+
+- scenario: coordenada-sin-dato-es-null
+  file: scripts/sync-prices.mjs
+  why: "si el script no comprueba que el valor es un número, guarda NaN (null tras JSON) solo por casualidad y un texto vacío como 0"
