@@ -1,6 +1,6 @@
 ---
 slice: coordenadas-numericas
-status: proposed
+status: shipped
 kind: action
 actor: sincronizador
 trigger:
